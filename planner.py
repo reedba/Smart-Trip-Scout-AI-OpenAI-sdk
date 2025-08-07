@@ -24,6 +24,7 @@ class TripPlan:
     weather_info: Dict[str, Any]
     restaurants: List[Dict[str, Any]]
     activities: List[Dict[str, Any]]
+    festivals_events: List[Dict[str, Any]]
     itinerary: Dict[str, List[Dict[str, Any]]]
     confidence_score: float
     budget_level: str
@@ -255,6 +256,99 @@ class TripPlanner:
             "total_travel_time": duration + 2  # Add airport time
         }
     
+    def get_festivals_and_events(self, destination: str, start_date: str, end_date: str) -> List[Dict[str, Any]]:
+        """
+        Search for festivals and special events happening during the trip dates.
+        In production, this would use event APIs like Eventbrite, local tourism boards, or news APIs.
+        """
+        from datetime import datetime, timedelta
+        import random
+        
+        # Parse dates
+        start = datetime.strptime(start_date, "%Y-%m-%d")
+        end = datetime.strptime(end_date, "%Y-%m-%d")
+        
+        # Sample festivals and events database (in production, this would be real data)
+        festival_templates = [
+            {
+                "name": "{destination} Food Festival",
+                "type": "Food Festival",
+                "description": "Annual celebration of local cuisine",
+                "tags": ["food", "outdoor", "culture", "festival"],
+                "rating": 4.5,
+                "duration_days": 3
+            },
+            {
+                "name": "Summer Music Festival",
+                "type": "Music Festival", 
+                "description": "Multi-day outdoor music event",
+                "tags": ["music", "outdoor", "entertainment", "festival"],
+                "rating": 4.6,
+                "duration_days": 2
+            },
+            {
+                "name": "Art & Culture Week",
+                "type": "Cultural Event",
+                "description": "Galleries, museums, and art installations",
+                "tags": ["art", "culture", "indoor", "outdoor", "festival"],
+                "rating": 4.3,
+                "duration_days": 7
+            },
+            {
+                "name": "Historic Heritage Days",
+                "type": "Heritage Festival",
+                "description": "Celebration of local history and traditions",
+                "tags": ["history", "culture", "outdoor", "festival"],
+                "rating": 4.2,
+                "duration_days": 2
+            },
+            {
+                "name": "Night Market Festival",
+                "type": "Night Market",
+                "description": "Evening street food and shopping market",
+                "tags": ["food", "shopping", "outdoor", "evening", "festival"],
+                "rating": 4.4,
+                "duration_days": 1
+            },
+            {
+                "name": "Seasonal Flower Festival",
+                "type": "Nature Festival",
+                "description": "Beautiful seasonal flower displays",
+                "tags": ["nature", "outdoor", "photography", "festival"],
+                "rating": 4.1,
+                "duration_days": 14
+            }
+        ]
+        
+        # Randomly determine if festivals are happening (simulate real-world variability)
+        festivals_events = []
+        
+        # 40% chance of having festivals during the trip
+        if random.random() < 0.4:
+            # Select 1-2 festivals randomly
+            num_festivals = random.randint(1, 2)
+            selected_templates = random.sample(festival_templates, min(num_festivals, len(festival_templates)))
+            
+            for template in selected_templates:
+                # Generate random dates within the trip period
+                trip_days = (end - start).days + 1
+                if trip_days >= template["duration_days"]:
+                    # Festival can fit within trip
+                    max_start_day = trip_days - template["duration_days"]
+                    festival_start_offset = random.randint(0, max_start_day)
+                    festival_start = start + timedelta(days=festival_start_offset)
+                    festival_end = festival_start + timedelta(days=template["duration_days"] - 1)
+                    
+                    festival = template.copy()
+                    festival["name"] = template["name"].replace("{destination}", destination.split(",")[0])
+                    festival["start_date"] = festival_start.strftime("%Y-%m-%d")
+                    festival["end_date"] = festival_end.strftime("%Y-%m-%d")
+                    festival["dates_during_trip"] = True
+                    
+                    festivals_events.append(festival)
+        
+        return festivals_events
+    
     def compare_travel_options(self, origin: str, destination: str, num_travelers: int) -> Dict[str, Any]:
         """
         Compare driving vs flying options and return comprehensive analysis.
@@ -397,8 +491,17 @@ class TripPlanner:
             afternoon_activity = None
             evening_restaurant = None
             
-            # Morning activity
-            if unused_activities:
+            # Check for festivals/events happening on this specific date
+            festivals_today = [act for act in unused_activities 
+                             if act.get('type') in ['Food Festival', 'Music Festival', 'Cultural Event', 'Heritage Festival', 'Night Market', 'Nature Festival'] 
+                             and act.get('start_date') <= date_str <= act.get('end_date', date_str)]
+            
+            # Morning activity - prioritize festivals if available
+            if festivals_today and unused_activities:
+                morning_activity = festivals_today[0]
+                used_activities.add(morning_activity['name'])
+                unused_activities.remove(morning_activity)
+            elif unused_activities:
                 # Prefer outdoor activities in the morning if weather is good
                 outdoor_morning = [act for act in unused_activities if 'outdoor' in act.get('tags', [])]
                 if outdoor_morning:
@@ -409,7 +512,14 @@ class TripPlanner:
                 unused_activities.remove(morning_activity)
             
             # Afternoon activity (different from morning)
-            if unused_activities:
+            # Check for remaining festivals first
+            remaining_festivals = [act for act in festivals_today if act['name'] not in used_activities]
+            if remaining_festivals and unused_activities:
+                afternoon_activity = remaining_festivals[0]
+                used_activities.add(afternoon_activity['name'])
+                if afternoon_activity in unused_activities:
+                    unused_activities.remove(afternoon_activity)
+            elif unused_activities:
                 afternoon_activity = unused_activities[0]
                 used_activities.add(afternoon_activity['name'])
                 unused_activities.remove(afternoon_activity)
@@ -478,6 +588,14 @@ class TripPlanner:
         activity_query = f"activities events {destination} {start_date} {' '.join(interests)}"
         activity_results = self.websearch_tool(activity_query)
         
+        # Search for festivals and special events during the trip dates
+        yield "🎪 Searching for festivals and special events..."
+        festival_query = f"festivals events {destination} {start_date} {end_date}"
+        festival_results = self.websearch_tool(festival_query)
+        
+        # Simulate festival and event data
+        festivals_events = self.get_festivals_and_events(destination, start_date, end_date)
+        
         # Simulate activity data with more variety
         activities = [
             {"name": "City Museum", "type": "Cultural", "rating": 4.4, "tags": ["history", "indoor", "culture"]},
@@ -500,6 +618,18 @@ class TripPlanner:
         
         yield "📊 Evaluating restaurants..."
         scored_activities = self.function_tool_evaluator(activities, interests, weather_data)
+        
+        # Evaluate festivals and events if any are found
+        if festivals_events:
+            yield f"🎪 Found {len(festivals_events)} festival(s)/event(s) during your trip!"
+            scored_festivals = self.function_tool_evaluator(festivals_events, interests, weather_data)
+            # Boost festival scores since they're special time-limited events
+            for festival in scored_festivals:
+                festival['score'] = min(1.0, festival['score'] + 0.2)  # Boost by 0.2
+            # Add festivals to activities for itinerary planning
+            scored_activities.extend(scored_festivals)
+        else:
+            yield "🎪 No special festivals or events found during your trip dates"
         
         # Stage 3: Optimize itinerary
         yield "🗓️ Building your daily itinerary..."
@@ -547,6 +677,7 @@ class TripPlanner:
             weather_info=weather_data,
             restaurants=scored_restaurants,
             activities=scored_activities,
+            festivals_events=festivals_events,
             itinerary=itinerary,
             confidence_score=confidence_score,
             budget_level=budget_level,
@@ -562,116 +693,274 @@ class TripPlanner:
         yield self.format_trip_plan(trip_plan)
     
     def format_trip_plan(self, plan: TripPlan) -> str:
-        """Format the trip plan for display."""
+        """Format the trip plan for display with improved formatting."""
+        from datetime import datetime
+        
+        # Create properly formatted destination
+        destination_formatted = plan.destination.title()
+        
+        # Calculate trip duration
+        start = datetime.strptime(plan.start_date, "%Y-%m-%d")
+        end = datetime.strptime(plan.end_date, "%Y-%m-%d")
+        duration_days = (end - start).days + 1
+        
+        # Create confidence indicator
+        confidence_indicator = "🟢 High" if plan.confidence_score >= 0.7 else "🟡 Medium" if plan.confidence_score >= 0.5 else "🔴 Low"
+        
         output = f"""
-# 🌟 Smart Trip Scout Plan for {plan.destination}
+╔══════════════════════════════════════════════════════════════╗
+║                    🌟 SMART TRIP SCOUT PLAN                  ║
+║                      {destination_formatted.center(42)}                     ║
+╚══════════════════════════════════════════════════════════════╝
 
-## 📅 Trip Details
-- **Dates**: {plan.start_date} to {plan.end_date}
-- **Travelers**: {plan.num_travelers} person(s)
-- **Budget Level**: {plan.budget_level.title()}
-- **Interests**: {', '.join(plan.interests)}
-- **Confidence Score**: {plan.confidence_score:.2f}/1.00
+📋 TRIP OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 Travel Dates:    {plan.start_date} → {plan.end_date} ({duration_days} days)
+👥 Travelers:       {plan.num_travelers} person{'s' if plan.num_travelers != 1 else ''}
+💰 Budget Tier:     {plan.budget_level.title()} Level
+🎯 Interests:       {', '.join([interest.title() for interest in plan.interests])}
+📊 Confidence:      {confidence_indicator} ({plan.confidence_score:.1%})
 
-## 🌤️ Weather Information
-- **Condition**: {plan.weather_info['condition']}
-- **Temperature**: {plan.weather_info['temperature']}
-- **Forecast**: {plan.weather_info['forecast']}
+🌤️  WEATHER FORECAST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌡️  Temperature:    {plan.weather_info['temperature']}
+☀️  Conditions:     {plan.weather_info['condition'].title()}
+🌈  Forecast:       {plan.weather_info['forecast']}
 
-## 🗓️ Daily Itinerary
-"""
+🗓️  DAILY ITINERARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"""
         
         for date, day_plan in plan.itinerary.items():
-            output += f"\n### {date}\n"
+            # Format the date nicely
+            date_obj = datetime.strptime(date, "%Y-%m-%d")
+            formatted_date = date_obj.strftime("%A, %B %d, %Y")
+            
+            output += f"\n\n📍 {formatted_date}\n"
+            output += "─" * 65 + "\n"
             
             if day_plan.get('morning'):
                 morning = day_plan['morning']
-                output += f"**🌅 Morning**: {morning['name']} ({morning['type']}) - Rating: {morning['rating']}/5\n"
+                rating_stars = "⭐" * int(morning['rating']) + "☆" * (5 - int(morning['rating']))
+                output += f"🌅 MORNING     │ {morning['name']}\n"
+                output += f"              │ {morning['type']} • {rating_stars} ({morning['rating']}/5)\n"
             
             if day_plan.get('afternoon'):
                 afternoon = day_plan['afternoon']
-                output += f"**☀️ Afternoon**: {afternoon['name']} ({afternoon['type']}) - Rating: {afternoon['rating']}/5\n"
+                rating_stars = "⭐" * int(afternoon['rating']) + "☆" * (5 - int(afternoon['rating']))
+                output += f"☀️  AFTERNOON  │ {afternoon['name']}\n"
+                output += f"              │ {afternoon['type']} • {rating_stars} ({afternoon['rating']}/5)\n"
             
             if day_plan.get('evening'):
                 evening = day_plan['evening']
-                output += f"**🌙 Evening**: {evening['name']} ({evening.get('cuisine', evening.get('type', ''))}') - Rating: {evening['rating']}/5\n"
+                rating_stars = "⭐" * int(evening['rating']) + "☆" * (5 - int(evening['rating']))
+                cuisine = evening.get('cuisine', evening.get('type', ''))
+                output += f"🌙 EVENING     │ {evening['name']}\n"
+                output += f"              │ {cuisine} • {rating_stars} ({evening['rating']}/5)\n"
         
-        output += f"\n## 🍽️ Top Restaurants\n"
-        for restaurant in plan.restaurants[:3]:
-            output += f"- **{restaurant['name']}** ({restaurant['cuisine']}) - Score: {restaurant['score']:.2f}\n"
+        # Add festivals and events section if any are found
+        if plan.festivals_events:
+            output += f"\n\n� FESTIVALS & SPECIAL EVENTS\n"
+            output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            for event in plan.festivals_events:
+                if event['start_date'] == event.get('end_date', event['start_date']):
+                    event_dates = datetime.strptime(event['start_date'], "%Y-%m-%d").strftime("%B %d")
+                else:
+                    start_formatted = datetime.strptime(event['start_date'], "%Y-%m-%d").strftime("%B %d")
+                    end_formatted = datetime.strptime(event.get('end_date', event['start_date']), "%Y-%m-%d").strftime("%B %d")
+                    event_dates = f"{start_formatted} - {end_formatted}"
+                
+                rating_stars = "⭐" * int(event['rating']) + "☆" * (5 - int(event['rating']))
+                output += f"🎊 {event['name']}\n"
+                output += f"   📅 {event_dates} • {event['type']}\n"
+                output += f"   📝 {event['description']}\n"
+                output += f"   {rating_stars} ({event['rating']}/5)\n\n"
         
-        output += f"\n## 🎯 Top Activities\n"
-        for activity in plan.activities[:3]:
-            output += f"- **{activity['name']}** ({activity['type']}) - Score: {activity['score']:.2f}\n"
+        output += f"\n🍽️  RECOMMENDED RESTAURANTS\n"
+        output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        for i, restaurant in enumerate(plan.restaurants[:5], 1):
+            score_bar = "█" * int(restaurant['score'] * 10) + "░" * (10 - int(restaurant['score'] * 10))
+            output += f"{i}. {restaurant['name']} • {restaurant['cuisine']}\n"
+            output += f"   Match Score: {score_bar} {restaurant['score']:.0%}\n\n"
         
-        # Add budget breakdown
-        output += f"\n## 💰 Cost Breakdown ({plan.budget_level.title()} Budget for {plan.num_travelers} traveler(s))\n"
+        output += f"🎯 RECOMMENDED ACTIVITIES\n"
+        output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        # Filter out festivals from activities for this section
+        regular_activities = [act for act in plan.activities if act.get('type') not in ['Food Festival', 'Music Festival', 'Cultural Event', 'Heritage Festival', 'Night Market', 'Nature Festival']]
+        for i, activity in enumerate(regular_activities[:5], 1):
+            score_bar = "█" * int(activity['score'] * 10) + "░" * (10 - int(activity['score'] * 10))
+            output += f"{i}. {activity['name']} • {activity['type']}\n"
+            output += f"   Match Score: {score_bar} {activity['score']:.0%}\n\n"
         
+        # Add budget breakdown with better formatting
+        output += f"💰 COST BREAKDOWN\n"
+        output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        output += f"Budget Level: {plan.budget_level.title()} • Group Size: {plan.num_travelers} traveler{'s' if plan.num_travelers != 1 else ''}\n\n"
+        
+        category_details = {
+            "meals": {"emoji": "🍽️", "name": "Meals & Dining", "desc": "All food costs per day"},
+            "activities": {"emoji": "🎯", "name": "Activities & Tours", "desc": "Attractions and experiences"},
+            "transport": {"emoji": "🚗", "name": "Local Transport", "desc": "Getting around destination"},
+            "lodging": {"emoji": "🏨", "name": "Accommodation", "desc": "Hotels and lodging"},
+            "miscellaneous": {"emoji": "💼", "name": "Miscellaneous", "desc": "Tips, souvenirs, extras"}
+        }
+        
+        total_cost = plan.total_estimated_cost
         for category, cost in plan.cost_breakdown.items():
-            category_emoji = {
-                "meals": "🍽️",
-                "activities": "🎯", 
-                "transport": "🚗",
-                "lodging": "🏨",
-                "miscellaneous": "💼"
-            }
-            emoji = category_emoji.get(category, "💵")
-            output += f"- **{emoji} {category.title()}**: ${cost:.2f}\n"
+            if category in category_details:
+                details = category_details[category]
+                percentage = (cost / total_cost) * 100
+                cost_bar = "█" * int(percentage / 5) + "░" * (20 - int(percentage / 5))
+                output += f"{details['emoji']} {details['name']:<20} │ ${cost:>8,.2f} │ {cost_bar} {percentage:.1f}%\n"
         
-        output += f"\n**💳 Total Estimated Cost**: ${plan.total_estimated_cost:.2f}\n"
+        output += f"\n{'─' * 65}\n"
+        output += f"💳 TOTAL ESTIMATED COST: ${total_cost:,.2f}\n"
+        output += f"💵 Cost per person: ${total_cost / plan.num_travelers:,.2f}\n"
         
         if not plan.include_lodging:
-            output += f"\n*Note: Lodging costs not included. Add lodging to get complete budget estimate.*\n"
+            output += f"\n⚠️  Note: Lodging costs not included in this estimate\n"
         
         # Add travel comparison if available
         if plan.travel_comparison:
             tc = plan.travel_comparison
-            output += f"\n## 🚗✈️ Travel Comparison: {plan.origin_city} → {plan.destination}\n"
+            output += f"\n\n🚗✈️  TRAVEL OPTIONS: {plan.origin_city.title()} → {destination_formatted}\n"
+            output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             
             # Driving section
             driving = tc["driving"]
-            output += f"\n### 🚗 Driving Option\n"
-            output += f"- **Distance**: {driving['distance_miles']:.0f} miles\n"
-            output += f"- **Duration**: {driving['drive_time_hours']:.1f} hours (one way)\n"
-            output += f"- **Total Cost**: ${driving['total_cost']:.2f}\n"
-            output += f"  - Cost breakdown: ${driving['cost_breakdown']['total_per_group']:.2f}\n"
-            output += f"- **Cost per person**: ${driving['cost_per_person']:.2f}\n"
-            output += f"- **Convenience**: Flexible schedule, door-to-door\n"
+            output += f"🚗 DRIVING OPTION\n"
+            output += f"   Distance:     {driving['distance_miles']:.0f} miles ({driving['drive_time_hours']:.1f} hours each way)\n"
+            output += f"   Total Cost:   ${driving['total_cost']:.2f} (${driving['cost_per_person']:.2f} per person)\n"
+            output += f"   Round Trip:   {driving['drive_time_hours'] * 2:.1f} hours total driving time\n"
+            output += f"   Pros:         Flexible schedule, door-to-door, split costs\n"
+            output += f"   Cons:         Longer travel time, driver fatigue\n\n"
             
             # Flying section
             flying = tc["flying"]
-            output += f"\n### ✈️ Flying Option\n"
-            output += f"- **Flight Cost per person**: ${flying['cost_per_person']:.2f}\n"
-            output += f"- **Total Cost**: ${flying['total_cost']:.2f}\n"
-            output += f"- **Flight Duration**: ~{flying['flight_duration_hours']:.1f} hours (one way)\n"
-            output += f"- **Total Travel Time**: ~{flying['total_time_hours']:.1f} hours (incl. airport time)\n"
-            output += f"- **Convenience**: Faster, requires airport procedures\n"
+            output += f"✈️  FLYING OPTION\n"
+            output += f"   Flight Time:  {flying['flight_duration_hours']:.1f} hours each way\n"
+            output += f"   Total Cost:   ${flying['total_cost']:.2f} (${flying['cost_per_person']:.2f} per person)\n"
+            output += f"   Travel Time:  {flying['total_time_hours']:.1f} hours (including airport time)\n"
+            output += f"   Pros:         Fast travel, no driving fatigue, weather independent\n"
+            output += f"   Cons:         Airport procedures, baggage limits, fixed schedule\n\n"
             
             # Recommendation
             rec = tc["recommendation"]
-            output += f"\n### 🎯 Recommendation\n"
-            output += f"**{rec['preferred'].title()} recommended** - {rec['reason']}\n"
+            cost_savings = abs(driving['total_cost'] - flying['total_cost'])
+            output += f"🎯 RECOMMENDATION\n"
+            output += f"   {rec['preferred'].upper()} RECOMMENDED\n"
+            output += f"   Reason: {rec['reason'].title()}\n"
+            output += f"   Cost difference: ${cost_savings:.2f}\n"
+        
+        output += f"\n\n{'═' * 65}\n"
+        output += f"🤖 Generated by Smart Trip Scout AI • Have an amazing trip! ✈️🌍\n"
+        output += f"{'═' * 65}"
         
         return output
     
     def send_email(self, to_email: str, trip_plan: str) -> bool:
-        """Send trip plan via email using SendGrid."""
+        """Send trip plan via email using SendGrid with improved formatting."""
         try:
-            # Create HTML version of the trip plan
+            # Parse the trip plan to extract structured data
+            lines = trip_plan.split('\n')
+            
+            # Extract key information
+            destination = ""
+            dates = ""
+            travelers = ""
+            budget = ""
+            total_cost = ""
+            
+            for line in lines:
+                if "Smart Trip Scout Plan for" in line:
+                    destination = line.replace("# 🌟 Smart Trip Scout Plan for ", "").strip()
+                elif "**Dates**:" in line:
+                    dates = line.replace("- **Dates**: ", "").strip()
+                elif "**Travelers**:" in line:
+                    travelers = line.replace("- **Travelers**: ", "").strip()
+                elif "**Budget Level**:" in line:
+                    budget = line.replace("- **Budget Level**: ", "").strip()
+                elif "**💳 Total Estimated Cost**:" in line:
+                    total_cost = line.replace("**💳 Total Estimated Cost**: ", "").strip()
+            
+            # Create beautiful HTML email
             html_content = f"""
-            <html>
-                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-                    <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
-                        <h1 style="color: #2c3e50; text-align: center;">🌟 Your Smart Trip Scout Plan</h1>
-                        <hr style="border: 1px solid #eee; margin: 20px 0;">
-                        <pre style="white-space: pre-wrap; background-color: #f8f9fa; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace;">{trip_plan}</pre>
-                        <hr style="border: 1px solid #eee; margin: 20px 0;">
-                        <p style="text-align: center; color: #7f8c8d; font-size: 14px;">
-                            Generated by Smart Trip Scout AI<br>
-                            Have an amazing trip! ✈️🌍
-                        </p>
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Your Smart Trip Scout Plan</title>
+            </head>
+            <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fc;">
+                <div style="max-width: 800px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    
+                    <!-- Header -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+                        <h1 style="margin: 0; font-size: 28px; font-weight: 600;">🌟 Your Smart Trip Scout Plan</h1>
+                        <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">AI-powered travel planning at your fingertips</p>
                     </div>
-                </body>
+                    
+                    <!-- Trip Overview Card -->
+                    <div style="padding: 30px; background-color: #f8f9fa; border-bottom: 1px solid #e9ecef;">
+                        <h2 style="color: #2c3e50; margin: 0 0 20px 0; font-size: 24px;">📍 Trip Overview</h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex: 1; min-width: 200px;">
+                                <h3 style="color: #667eea; margin: 0 0 8px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">🗺️ Destination</h3>
+                                <p style="margin: 0; font-size: 18px; font-weight: 600; color: #2c3e50;">{destination}</p>
+                            </div>
+                            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex: 1; min-width: 200px;">
+                                <h3 style="color: #667eea; margin: 0 0 8px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">📅 Dates</h3>
+                                <p style="margin: 0; font-size: 18px; font-weight: 600; color: #2c3e50;">{dates}</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
+                            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex: 1; min-width: 200px;">
+                                <h3 style="color: #667eea; margin: 0 0 8px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">👥 Travelers</h3>
+                                <p style="margin: 0; font-size: 18px; font-weight: 600; color: #2c3e50;">{travelers}</p>
+                            </div>
+                            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex: 1; min-width: 200px;">
+                                <h3 style="color: #667eea; margin: 0 0 8px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">💳 Budget</h3>
+                                <p style="margin: 0; font-size: 18px; font-weight: 600; color: #2c3e50;">{budget}</p>
+                            </div>
+                        </div>
+                        {f'''<div style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px;">
+                            <h3 style="margin: 0 0 5px 0; font-size: 16px; opacity: 0.9;">💰 Estimated Total Cost</h3>
+                            <p style="margin: 0; font-size: 28px; font-weight: 700;">{total_cost}</p>
+                        </div>''' if total_cost else ''}
+                    </div>
+                    
+                    <!-- Detailed Plan -->
+                    <div style="padding: 30px;">
+                        <h2 style="color: #2c3e50; margin: 0 0 20px 0; font-size: 24px;">📋 Complete Trip Details</h2>
+                        <div style="background-color: #f8f9fa; padding: 25px; border-radius: 12px; border-left: 4px solid #667eea;">
+                            <pre style="white-space: pre-wrap; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; margin: 0; color: #2c3e50; font-size: 14px;">{trip_plan}</pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Call to Action -->
+                    <div style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;">
+                        <h3 style="color: #2c3e50; margin: 0 0 15px 0;">Ready for your adventure? 🎒</h3>
+                        <p style="color: #6c757d; margin: 0 0 20px 0; font-size: 16px;">Save this email for easy reference during your trip!</p>
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border-radius: 25px; display: inline-block; font-weight: 600; text-decoration: none;">
+                            ✈️ Have an Amazing Trip!
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div style="background-color: #2c3e50; color: #ecf0f1; padding: 20px; text-align: center;">
+                        <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">🤖 Generated by Smart Trip Scout AI</p>
+                        <p style="margin: 0; font-size: 14px; opacity: 0.8;">Intelligent travel planning powered by artificial intelligence</p>
+                        <div style="margin-top: 15px;">
+                            <span style="color: #3498db;">🌍</span>
+                            <span style="color: #e74c3c;">✈️</span>
+                            <span style="color: #f39c12;">🏨</span>
+                            <span style="color: #2ecc71;">�️</span>
+                            <span style="color: #9b59b6;">🎯</span>
+                        </div>
+                    </div>
+                    
+                </div>
+            </body>
             </html>
             """
             

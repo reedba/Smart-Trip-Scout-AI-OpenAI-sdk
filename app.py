@@ -211,6 +211,7 @@ def create_gradio_interface():
         - **AI-Powered Planning**: Uses OpenAI to create intelligent itineraries
         - **Weather Integration**: Plans activities based on weather conditions
         - **Interest Matching**: Recommends activities and restaurants based on your preferences
+        - **Festival & Event Detection**: Automatically finds local festivals and events during your trip
         - **Budget Estimation**: Get detailed cost breakdowns for low, mid, and luxury budgets
         - **Travel Cost Comparison**: Compare driving vs flying costs and get recommendations
         - **Multi-Traveler Support**: Plan for 1-20 travelers with accurate cost calculations

@@ -8,7 +8,7 @@ import time
 # Initialize the trip planner
 planner = TripPlanner()
 
-def plan_trip_gradio(destination, start_date, end_date, interests_text, budget_level, num_travelers, include_lodging, email, enable_push):
+def plan_trip_gradio(destination, start_date, end_date, interests_text, email, enable_push):
     """
     Gradio interface function for trip planning with streaming updates.
     """
@@ -19,14 +19,6 @@ def plan_trip_gradio(destination, start_date, end_date, interests_text, budget_l
     interests = [interest.strip() for interest in interests_text.split(',') if interest.strip()]
     if not interests:
         interests = ['general']
-    
-    # Validate number of travelers
-    try:
-        num_travelers = int(num_travelers) if num_travelers else 1
-        if num_travelers < 1:
-            num_travelers = 1
-    except ValueError:
-        num_travelers = 1
     
     def run_async_planning():
         """Run the async planning in a separate thread."""
@@ -40,7 +32,7 @@ def plan_trip_gradio(destination, start_date, end_date, interests_text, budget_l
                 formatted_plan = ""
                 
                 # Execute the planning and collect updates
-                planning_gen = planner.plan_trip(destination, start_date, end_date, interests, budget_level, num_travelers, include_lodging)
+                planning_gen = planner.plan_trip(destination, start_date, end_date, interests)
                 async for update in planning_gen:
                     all_updates.append(update)
                     # Check if this is the formatted trip plan (contains detailed markdown)
@@ -130,31 +122,7 @@ def create_gradio_interface():
                     lines=2
                 )
                 
-                gr.Markdown("## � Budget & Travel Details")
-                
-                with gr.Row():
-                    budget_level = gr.Dropdown(
-                        choices=["low", "mid", "luxury"],
-                        value="mid",
-                        label="💳 Budget Level",
-                        info="Choose your budget preference"
-                    )
-                    num_travelers = gr.Number(
-                        label="👥 Number of Travelers",
-                        value=1,
-                        minimum=1,
-                        maximum=20,
-                        step=1,
-                        info="How many people?"
-                    )
-                
-                include_lodging = gr.Checkbox(
-                    label="🏨 Include Lodging Costs",
-                    value=False,
-                    info="Add hotel/accommodation costs to budget estimate"
-                )
-                
-                gr.Markdown("## �📬 Notifications (Optional)")
+                gr.Markdown("## 📬 Notifications (Optional)")
                 
                 email = gr.Textbox(
                     label="📧 Email Address",
@@ -184,7 +152,7 @@ def create_gradio_interface():
         # Set up the event handler
         plan_button.click(
             fn=plan_trip_gradio,
-            inputs=[destination, start_date, end_date, interests, budget_level, num_travelers, include_lodging, email, enable_push],
+            inputs=[destination, start_date, end_date, interests, email, enable_push],
             outputs=output
         )
         
@@ -205,9 +173,6 @@ def create_gradio_interface():
         - **AI-Powered Planning**: Uses OpenAI to create intelligent itineraries
         - **Weather Integration**: Plans activities based on weather conditions
         - **Interest Matching**: Recommends activities and restaurants based on your preferences
-        - **Budget Estimation**: Get detailed cost breakdowns for low, mid, and luxury budgets
-        - **Multi-Traveler Support**: Plan for 1-20 travelers with accurate cost calculations
-        - **Lodging Options**: Include or exclude accommodation costs
         - **Confidence Scoring**: Indicates how confident the AI is in the recommendations
         - **Email & Push Notifications**: Get your plan delivered directly to you
         
@@ -215,10 +180,7 @@ def create_gradio_interface():
         
         - **Destination**: Tokyo, Japan
         - **Dates**: 2025-08-15 to 2025-08-20
-        - **Travelers**: 2 people
-        - **Budget**: Mid-range
         - **Interests**: food, culture, technology, anime
-        - **Include Lodging**: Yes
         """)
     
     return demo
@@ -226,27 +188,12 @@ def create_gradio_interface():
 def main():
     """Main function to launch the Gradio app."""
     demo = create_gradio_interface()
-    
-    # Try multiple ports in case 7860 is busy
-    ports_to_try = [7860, 7861, 7862, 7863, 7864]
-    
-    for port in ports_to_try:
-        try:
-            demo.launch(
-                server_name="0.0.0.0",
-                server_port=port,
-                share=True,
-                debug=True
-            )
-            break  # If successful, stop trying other ports
-        except OSError as e:
-            if "bind on address" in str(e) or "Cannot find empty port" in str(e):
-                print(f"⚠️  Port {port} is busy, trying next port...")
-                continue
-            else:
-                raise  # Re-raise if it's a different error
-    else:
-        print("❌ Could not find an available port. Please stop other instances or specify a different port.")
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        share=True,
+        debug=True
+    )
 
 if __name__ == "__main__":
     main()

@@ -26,6 +26,11 @@ class TripPlan:
     activities: List[Dict[str, Any]]
     itinerary: Dict[str, List[Dict[str, Any]]]
     confidence_score: float
+    budget_level: str
+    num_travelers: int
+    include_lodging: bool
+    cost_breakdown: Dict[str, float]
+    total_estimated_cost: float
 
 class TripPlanner:
     def __init__(self):
@@ -44,6 +49,98 @@ class TripPlanner:
             "results": f"Search results for: {query}",
             "timestamp": datetime.now().isoformat()
         }
+    
+    def get_price_estimates(self, destination: str, budget_level: str) -> Dict[str, Dict[str, float]]:
+        """
+        Get price estimates based on destination and budget level.
+        Returns pricing for different categories in different budget tiers.
+        """
+        # Base prices (per person per day) - these would ideally come from a pricing API
+        base_prices = {
+            # Meals (per person per day)
+            "meals": {
+                "low": 25,      # Budget dining, street food, simple restaurants
+                "mid": 50,      # Mid-range restaurants, some fine dining
+                "luxury": 100   # High-end restaurants, fine dining experiences
+            },
+            # Activities (per person per day)
+            "activities": {
+                "low": 15,      # Free/cheap attractions, walking tours
+                "mid": 40,      # Museums, paid attractions, some tours
+                "luxury": 80    # Premium experiences, private tours, shows
+            },
+            # Local transport (per person per day)
+            "transport": {
+                "low": 10,      # Public transport, walking
+                "mid": 25,      # Mix of public transport and taxis/rideshare
+                "luxury": 60    # Private transport, premium services
+            },
+            # Lodging (per person per night)
+            "lodging": {
+                "low": 40,      # Hostels, budget hotels
+                "mid": 100,     # Mid-range hotels, nice B&Bs
+                "luxury": 250   # Luxury hotels, resorts
+            }
+        }
+        
+        # Regional multipliers based on destination cost of living
+        regional_multipliers = {
+            # High-cost destinations
+            "paris": 1.4, "london": 1.3, "new york": 1.3, "tokyo": 1.2, "sydney": 1.2,
+            "zurich": 1.5, "oslo": 1.4, "copenhagen": 1.3, "stockholm": 1.2,
+            
+            # Medium-cost destinations  
+            "rome": 1.0, "madrid": 0.9, "berlin": 0.9, "amsterdam": 1.1, "barcelona": 0.9,
+            "prague": 0.7, "budapest": 0.6, "lisbon": 0.8, "athens": 0.7,
+            
+            # Lower-cost destinations
+            "bangkok": 0.4, "mexico city": 0.5, "istanbul": 0.5, "cairo": 0.4,
+            "delhi": 0.3, "lima": 0.5, "marrakech": 0.5, "prague": 0.6
+        }
+        
+        # Get multiplier for destination (default to 1.0 if not found)
+        destination_key = destination.lower().split(',')[0].strip()
+        multiplier = regional_multipliers.get(destination_key, 1.0)
+        
+        # Apply regional multiplier to base prices
+        adjusted_prices = {}
+        for category, budget_prices in base_prices.items():
+            adjusted_prices[category] = {
+                budget: price * multiplier 
+                for budget, price in budget_prices.items()
+            }
+        
+        return adjusted_prices
+    
+    def calculate_trip_cost(self, destination: str, start_date: str, end_date: str, 
+                          budget_level: str, num_travelers: int, include_lodging: bool) -> Dict[str, float]:
+        """
+        Calculate total trip cost breakdown.
+        """
+        # Calculate number of days
+        start = datetime.strptime(start_date, "%Y-%m-%d")
+        end = datetime.strptime(end_date, "%Y-%m-%d")
+        days = (end - start).days + 1
+        nights = days - 1
+        
+        # Get price estimates for destination
+        prices = self.get_price_estimates(destination, budget_level)
+        
+        # Calculate costs
+        cost_breakdown = {
+            "meals": prices["meals"][budget_level] * days * num_travelers,
+            "activities": prices["activities"][budget_level] * days * num_travelers,
+            "transport": prices["transport"][budget_level] * days * num_travelers,
+        }
+        
+        if include_lodging:
+            cost_breakdown["lodging"] = prices["lodging"][budget_level] * nights * num_travelers
+        
+        # Add some miscellaneous costs (10% of total)
+        subtotal = sum(cost_breakdown.values())
+        cost_breakdown["miscellaneous"] = subtotal * 0.1
+        
+        return cost_breakdown
     
     def function_tool_evaluator(self, items: List[Dict], interests: List[str], weather: Dict) -> List[Dict]:
         """
@@ -103,7 +200,8 @@ class TripPlanner:
         return itinerary
     
     async def plan_trip(self, destination: str, start_date: str, end_date: str, 
-                       interests: List[str]) -> AsyncGenerator[str, None]:
+                       interests: List[str], budget_level: str = "mid", 
+                       num_travelers: int = 1, include_lodging: bool = False) -> AsyncGenerator[str, None]:
         """
         Main trip planning function that yields status updates.
         """
@@ -165,7 +263,16 @@ class TripPlanner:
         avg_restaurant_score = sum(item['score'] for item in scored_restaurants) / len(scored_restaurants) if scored_restaurants else 0
         confidence_score = (avg_activity_score + avg_restaurant_score) / 2
         
-        # Stage 4: Check confidence
+        # Stage 4: Calculate budget and cost breakdown
+        yield f"💰 Calculating trip costs for {budget_level} budget level..."
+        cost_breakdown = self.calculate_trip_cost(
+            destination, start_date, end_date, budget_level, num_travelers, include_lodging
+        )
+        total_cost = sum(cost_breakdown.values())
+        
+        yield f"💳 Estimated total cost: ${total_cost:.2f} for {num_travelers} traveler(s)"
+        
+        # Stage 5: Check confidence
         if confidence_score < 0.7:
             yield "⚠️ Low confidence in plan – suggest user review and provide feedback"
         else:
@@ -181,7 +288,12 @@ class TripPlanner:
             restaurants=scored_restaurants,
             activities=scored_activities,
             itinerary=itinerary,
-            confidence_score=confidence_score
+            confidence_score=confidence_score,
+            budget_level=budget_level,
+            num_travelers=num_travelers,
+            include_lodging=include_lodging,
+            cost_breakdown=cost_breakdown,
+            total_estimated_cost=total_cost
         )
         
         yield "🎉 Trip planning complete!"
@@ -194,6 +306,8 @@ class TripPlanner:
 
 ## 📅 Trip Details
 - **Dates**: {plan.start_date} to {plan.end_date}
+- **Travelers**: {plan.num_travelers} person(s)
+- **Budget Level**: {plan.budget_level.title()}
 - **Interests**: {', '.join(plan.interests)}
 - **Confidence Score**: {plan.confidence_score:.2f}/1.00
 
@@ -227,6 +341,25 @@ class TripPlanner:
         output += f"\n## 🎯 Top Activities\n"
         for activity in plan.activities[:3]:
             output += f"- **{activity['name']}** ({activity['type']}) - Score: {activity['score']:.2f}\n"
+        
+        # Add budget breakdown
+        output += f"\n## 💰 Cost Breakdown ({plan.budget_level.title()} Budget for {plan.num_travelers} traveler(s))\n"
+        
+        for category, cost in plan.cost_breakdown.items():
+            category_emoji = {
+                "meals": "🍽️",
+                "activities": "🎯", 
+                "transport": "🚗",
+                "lodging": "🏨",
+                "miscellaneous": "💼"
+            }
+            emoji = category_emoji.get(category, "💵")
+            output += f"- **{emoji} {category.title()}**: ${cost:.2f}\n"
+        
+        output += f"\n**💳 Total Estimated Cost**: ${plan.total_estimated_cost:.2f}\n"
+        
+        if not plan.include_lodging:
+            output += f"\n*Note: Lodging costs not included. Add lodging to get complete budget estimate.*\n"
         
         return output
     

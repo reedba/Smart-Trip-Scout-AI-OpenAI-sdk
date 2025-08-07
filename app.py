@@ -8,7 +8,7 @@ import time
 # Initialize the trip planner
 planner = TripPlanner()
 
-def plan_trip_gradio(destination, start_date, end_date, interests_text, budget_level, num_travelers, include_lodging, email, enable_push):
+def plan_trip_gradio(destination, origin_city, start_date, end_date, interests_text, budget_level, num_travelers, include_lodging, email, enable_push):
     """
     Gradio interface function for trip planning with streaming updates.
     """
@@ -40,7 +40,7 @@ def plan_trip_gradio(destination, start_date, end_date, interests_text, budget_l
                 formatted_plan = ""
                 
                 # Execute the planning and collect updates
-                planning_gen = planner.plan_trip(destination, start_date, end_date, interests, budget_level, num_travelers, include_lodging)
+                planning_gen = planner.plan_trip(destination, start_date, end_date, interests, budget_level, num_travelers, include_lodging, origin_city)
                 async for update in planning_gen:
                     all_updates.append(update)
                     # Check if this is the formatted trip plan (contains detailed markdown)
@@ -109,6 +109,12 @@ def create_gradio_interface():
                     label="🗺️ Destination",
                     placeholder="e.g., Paris, France",
                     info="Where would you like to go?"
+                )
+                
+                origin_city = gr.Textbox(
+                    label="🏠 Origin City (Optional)",
+                    placeholder="e.g., New York, NY",
+                    info="Your starting location for travel cost comparison"
                 )
                 
                 with gr.Row():
@@ -184,7 +190,7 @@ def create_gradio_interface():
         # Set up the event handler
         plan_button.click(
             fn=plan_trip_gradio,
-            inputs=[destination, start_date, end_date, interests, budget_level, num_travelers, include_lodging, email, enable_push],
+            inputs=[destination, origin_city, start_date, end_date, interests, budget_level, num_travelers, include_lodging, email, enable_push],
             outputs=output
         )
         
@@ -206,6 +212,7 @@ def create_gradio_interface():
         - **Weather Integration**: Plans activities based on weather conditions
         - **Interest Matching**: Recommends activities and restaurants based on your preferences
         - **Budget Estimation**: Get detailed cost breakdowns for low, mid, and luxury budgets
+        - **Travel Cost Comparison**: Compare driving vs flying costs and get recommendations
         - **Multi-Traveler Support**: Plan for 1-20 travelers with accurate cost calculations
         - **Lodging Options**: Include or exclude accommodation costs
         - **Confidence Scoring**: Indicates how confident the AI is in the recommendations
@@ -214,6 +221,7 @@ def create_gradio_interface():
         ### 📝 Example Usage
         
         - **Destination**: Tokyo, Japan
+        - **Origin City**: Los Angeles, CA
         - **Dates**: 2025-08-15 to 2025-08-20
         - **Travelers**: 2 people
         - **Budget**: Mid-range

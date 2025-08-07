@@ -80,59 +80,30 @@ class TripPlanner:
     def _parse_destination_info(self, content: str, destination: str) -> Dict[str, Any]:
         """Parse AI response into structured data."""
         # Enhanced parsing logic to extract structured information
-        # Customize for St. Thomas / Caribbean destinations
-        if "thomas" in destination.lower() or "virgin" in destination.lower():
-            return {
-                "weather": {
-                    "condition": "sunny",
-                    "temperature": "82°F",
-                    "humidity": "75%",
-                    "forecast": "Tropical paradise with warm sunshine and gentle trade winds"
-                },
-                "restaurants": [
-                    {"name": "Coral World Snack Bar", "cuisine": "Caribbean", "rating": 4.3, "tags": ["food", "casual", "ocean views"], "estimated_cost": 35},
-                    {"name": "Magens Bay Beach Bar", "cuisine": "Seafood", "rating": 4.5, "tags": ["food", "beach", "outdoor", "fish"], "estimated_cost": 45},
-                    {"name": "Paradise Point Restaurant", "cuisine": "International", "rating": 4.4, "tags": ["food", "fine dining", "views"], "estimated_cost": 75},
-                    {"name": "Fishing Village Restaurant", "cuisine": "Local Fish", "rating": 4.6, "tags": ["food", "fish", "local", "water"], "estimated_cost": 55},
-                    {"name": "Beachside Grill", "cuisine": "Grilled Fish", "rating": 4.2, "tags": ["food", "beach", "fish", "outdoor"], "estimated_cost": 40},
-                ],
-                "activities": [
-                    {"name": "Deep Sea Fishing Charter", "type": "Water Sports", "rating": 4.8, "tags": ["fish", "water", "outdoor", "charter"], "estimated_cost": 120},
-                    {"name": "Magens Bay Beach", "type": "Beach", "rating": 4.7, "tags": ["beach", "water", "outdoor", "swimming"], "estimated_cost": 10},
-                    {"name": "Coral World Ocean Park", "type": "Marine Life", "rating": 4.4, "tags": ["water", "fish", "indoor", "outdoor"], "estimated_cost": 25},
-                    {"name": "Snorkeling at Coki Beach", "type": "Water Sports", "rating": 4.6, "tags": ["water", "fish", "beach", "outdoor"], "estimated_cost": 35},
-                    {"name": "Sunset Sailing", "type": "Water Sports", "rating": 4.5, "tags": ["water", "outdoor", "scenic"], "estimated_cost": 65},
-                    {"name": "Kayak Mangrove Tours", "type": "Water Sports", "rating": 4.3, "tags": ["water", "nature", "outdoor"], "estimated_cost": 45},
-                    {"name": "Beach Fishing", "type": "Fishing", "rating": 4.2, "tags": ["fish", "beach", "water", "outdoor"], "estimated_cost": 20},
-                    {"name": "Paradise Point Skyride", "type": "Sightseeing", "rating": 4.1, "tags": ["views", "outdoor"], "estimated_cost": 30},
-                ],
-                "festivals": []
-            }
-        else:
-            return {
-                "weather": {
-                    "condition": "sunny",
-                    "temperature": "22°C",
-                    "humidity": "65%",
-                    "forecast": "Partly cloudy with occasional sunshine"
-                },
-                "restaurants": [
-                    {"name": "Local Bistro", "cuisine": "French", "rating": 4.5, "tags": ["food", "fine dining"], "estimated_cost": 65},
-                    {"name": "Street Food Market", "cuisine": "Various", "rating": 4.2, "tags": ["food", "casual", "outdoor"], "estimated_cost": 25},
-                    {"name": "Historic Tavern", "cuisine": "Traditional", "rating": 4.3, "tags": ["history", "food", "indoor"], "estimated_cost": 45},
-                    {"name": "Rooftop Restaurant", "cuisine": "Contemporary", "rating": 4.6, "tags": ["food", "fine dining", "outdoor"], "estimated_cost": 80},
-                    {"name": "Ethnic Fusion Cafe", "cuisine": "Fusion", "rating": 4.1, "tags": ["food", "casual", "culture"], "estimated_cost": 35},
-                ],
-                "activities": [
-                    {"name": "City Museum", "type": "Cultural", "rating": 4.4, "tags": ["history", "indoor", "culture"], "estimated_cost": 20},
-                    {"name": "Food Walking Tour", "type": "Tour", "rating": 4.6, "tags": ["food", "outdoor", "walking"], "estimated_cost": 55},
-                    {"name": "Concert Hall", "type": "Entertainment", "rating": 4.3, "tags": ["music", "indoor"], "estimated_cost": 75},
-                    {"name": "Local Market", "type": "Shopping", "rating": 4.1, "tags": ["food", "outdoor", "culture"], "estimated_cost": 0},
-                    {"name": "Art Gallery", "type": "Cultural", "rating": 4.5, "tags": ["art", "indoor", "culture"], "estimated_cost": 15},
-                    {"name": "Scenic Park", "type": "Nature", "rating": 4.2, "tags": ["nature", "outdoor", "walking"], "estimated_cost": 0},
-                ],
-                "festivals": []
-            }
+        return {
+            "weather": {
+                "condition": "sunny",
+                "temperature": "22°C",
+                "humidity": "65%",
+                "forecast": "Partly cloudy with occasional sunshine"
+            },
+            "restaurants": [
+                {"name": "Local Bistro", "cuisine": "French", "rating": 4.5, "tags": ["food", "fine dining"], "estimated_cost": 65},
+                {"name": "Street Food Market", "cuisine": "Various", "rating": 4.2, "tags": ["food", "casual", "outdoor"], "estimated_cost": 25},
+                {"name": "Historic Tavern", "cuisine": "Traditional", "rating": 4.3, "tags": ["history", "food", "indoor"], "estimated_cost": 45},
+                {"name": "Rooftop Restaurant", "cuisine": "Contemporary", "rating": 4.6, "tags": ["food", "fine dining", "outdoor"], "estimated_cost": 80},
+                {"name": "Ethnic Fusion Cafe", "cuisine": "Fusion", "rating": 4.1, "tags": ["food", "casual", "culture"], "estimated_cost": 35},
+            ],
+            "activities": [
+                {"name": "City Museum", "type": "Cultural", "rating": 4.4, "tags": ["history", "indoor", "culture"], "estimated_cost": 20},
+                {"name": "Food Walking Tour", "type": "Tour", "rating": 4.6, "tags": ["food", "outdoor", "walking"], "estimated_cost": 55},
+                {"name": "Concert Hall", "type": "Entertainment", "rating": 4.3, "tags": ["music", "indoor"], "estimated_cost": 75},
+                {"name": "Local Market", "type": "Shopping", "rating": 4.1, "tags": ["food", "outdoor", "culture"], "estimated_cost": 0},
+                {"name": "Art Gallery", "type": "Cultural", "rating": 4.5, "tags": ["art", "indoor", "culture"], "estimated_cost": 15},
+                {"name": "Scenic Park", "type": "Nature", "rating": 4.2, "tags": ["nature", "outdoor", "walking"], "estimated_cost": 0},
+            ],
+            "festivals": []
+        }
 
     def _get_fallback_data(self, destination: str) -> Dict[str, Any]:
         """Fallback data when AI is unavailable."""
@@ -214,15 +185,15 @@ class TripPlanner:
         return sorted(items, key=lambda x: x['score'], reverse=True)
 
     async def optimize_itinerary(self, activities: List[Dict], restaurants: List[Dict], 
-                                num_travelers: int, budget_level: str, start_date: str = None, end_date: str = None) -> Dict:
-        """Use OpenAI to create an optimized itinerary."""
+                                num_travelers: int, budget_level: str) -> Dict:
+        """Use OpenAI to create an optimized 3-day itinerary."""
         try:
             response = await self.client.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {
                         "role": "system",
-                        "content": """You are an expert itinerary optimizer. Create a balanced trip plan considering:
+                        "content": """You are an expert itinerary optimizer. Create a balanced 3-day trip plan considering:
                         1. Activity variety and flow
                         2. Budget constraints and group size
                         3. Travel time between locations
@@ -233,117 +204,46 @@ class TripPlanner:
                     },
                     {
                         "role": "user", 
-                        "content": f"Create an optimized itinerary for {num_travelers} travelers, {budget_level} budget from {start_date} to {end_date}.\n\nTop Activities: {json.dumps(activities[:12])}\n\nTop Restaurants: {json.dumps(restaurants[:8])}"
+                        "content": f"Create an optimized 3-day itinerary for {num_travelers} travelers, {budget_level} budget.\n\nTop Activities: {json.dumps(activities[:12])}\n\nTop Restaurants: {json.dumps(restaurants[:8])}"
                     }
                 ]
             )
             
-            return self._create_structured_itinerary(activities, restaurants, num_travelers, budget_level, response.choices[0].message.content, start_date, end_date)
+            return self._create_structured_itinerary(activities, restaurants, num_travelers, budget_level, response.choices[0].message.content)
             
         except Exception as e:
             print(f"AI optimization failed: {e}")
-            return self._create_basic_itinerary(activities, restaurants, num_travelers, budget_level, start_date, end_date)
+            return self._create_basic_itinerary(activities, restaurants, num_travelers, budget_level)
 
     def _create_structured_itinerary(self, activities: List[Dict], restaurants: List[Dict], 
-                                   num_travelers: int, budget_level: str, ai_guidance: str, start_date: str = None, end_date: str = None) -> Dict:
+                                   num_travelers: int, budget_level: str, ai_guidance: str) -> Dict:
         """Create structured itinerary with AI guidance."""
-        from datetime import datetime, timedelta
+        budget_multiplier = {'Budget': 0.8, 'Mid-range': 1.0, 'Luxury': 1.5}.get(budget_level, 1.0)
         
-        budget_multiplier = {'low': 0.8, 'mid': 1.0, 'luxury': 1.5}.get(budget_level, 1.0)
-        
-        # Parse start date or use default
-        if start_date:
-            base_date = datetime.strptime(start_date, "%Y-%m-%d").date()
-        else:
-            base_date = datetime.now().date()
-            
-        # Calculate trip duration
-        if end_date and start_date:
-            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()
-            trip_days = (end_date_obj - base_date).days + 1
-        else:
-            trip_days = 5  # Default 5-day trip
-        
-        # Intelligent selection with diversity - ensure we have enough for all days
+        # Intelligent selection with diversity
         selected_activities = []
         activity_types = set()
         
-        # Select activities based on trip length (3 activities per day)
-        max_activities = trip_days * 3
+        for activity in activities[:15]:
+            if len(selected_activities) < 9:  # 3 per day
+                activity_type = activity.get('type', 'General')
+                if activity_type not in activity_types or len(selected_activities) < 6:
+                    selected_activities.append(activity)
+                    activity_types.add(activity_type)
         
-        # First pass: Try to get diverse activity types
-        for activity in activities:
-            if len(selected_activities) >= max_activities:
-                break
-            activity_type = activity.get('type', 'General')
-            if activity_type not in activity_types:
-                selected_activities.append(activity)
-                activity_types.add(activity_type)
+        selected_restaurants = restaurants[:6]  # 2 per day
         
-        # Second pass: Fill remaining slots with best scored activities
-        for activity in activities:
-            if len(selected_activities) >= max_activities:
-                break
-            if activity not in selected_activities:
-                selected_activities.append(activity)
-        
-        # If we still don't have enough, repeat the best activities
-        while len(selected_activities) < max_activities and activities:
-            for activity in activities[:5]:  # Use top 5 activities
-                if len(selected_activities) >= max_activities:
-                    break
-                selected_activities.append(activity)
-        
-        # Select restaurants (2 per day) - ensure we have enough
-        max_restaurants = trip_days * 2
-        selected_restaurants = restaurants[:max_restaurants]
-        
-        # If we don't have enough restaurants, repeat the best ones
-        while len(selected_restaurants) < max_restaurants and restaurants:
-            for restaurant in restaurants[:3]:  # Use top 3 restaurants
-                if len(selected_restaurants) >= max_restaurants:
-                    break
-                selected_restaurants.append(restaurant)
-        
-        # Create day-by-day itinerary with actual dates
-        days = {}
-        for day_num in range(trip_days):
-            # Calculate the actual date for this day
-            current_date = base_date + timedelta(days=day_num)
-            date_key = current_date.strftime("%Y-%m-%d")
-            formatted_date = current_date.strftime("%A, %B %d")
+        # Create 3-day structure
+        days = []
+        for day_num in range(3):
+            day_activities = selected_activities[day_num*3:(day_num+1)*3]
+            day_restaurants = selected_restaurants[day_num*2:(day_num+1)*2]
             
-            # Select activities and restaurants for this day
-            day_activities = selected_activities[day_num*3:(day_num+1)*3] if day_num*3 < len(selected_activities) else []
-            day_restaurants = selected_restaurants[day_num*2:(day_num+1)*2] if day_num*2 < len(selected_restaurants) else []
-            
-            # If we don't have enough activities for this day, fill with available ones
-            while len(day_activities) < 3 and selected_activities:
-                # Cycle through available activities
-                additional_activity = selected_activities[len(day_activities) % len(selected_activities)]
-                day_activities.append(additional_activity)
-            
-            # If we don't have enough restaurants for this day, fill with available ones
-            while len(day_restaurants) < 2 and selected_restaurants:
-                # Cycle through available restaurants
-                additional_restaurant = selected_restaurants[len(day_restaurants) % len(selected_restaurants)]
-                day_restaurants.append(additional_restaurant)
-            
-            # Structure the day with morning, afternoon, evening
-            day_plan = {}
-            
-            if len(day_activities) > 0:
-                day_plan['morning'] = day_activities[0]
-            if len(day_activities) > 1:
-                day_plan['afternoon'] = day_activities[1]
-            if len(day_activities) > 2:
-                day_plan['late_afternoon'] = day_activities[2]
-            if len(day_restaurants) > 0:
-                day_plan['evening'] = day_restaurants[0]  # Evening restaurant
-            if len(day_restaurants) > 1:
-                day_plan['lunch'] = day_restaurants[1]  # Lunch restaurant
-                
-            days[date_key] = day_plan
+            days.append({
+                'day': day_num + 1,
+                'activities': day_activities,
+                'restaurants': day_restaurants
+            })
         
         # Cost calculation
         total_cost = sum(
@@ -355,16 +255,16 @@ class TripPlanner:
             'days': days,
             'total_activities': len(selected_activities),
             'total_restaurants': len(selected_restaurants),
-            'estimated_cost_per_person': total_cost / num_travelers if num_travelers > 0 else total_cost,
+            'estimated_cost_per_person': total_cost / num_travelers,
             'total_estimated_cost': total_cost,
             'budget_level': budget_level,
             'ai_optimized': True
         }
 
     def _create_basic_itinerary(self, activities: List[Dict], restaurants: List[Dict], 
-                               num_travelers: int, budget_level: str, start_date: str = None, end_date: str = None) -> Dict:
+                               num_travelers: int, budget_level: str) -> Dict:
         """Basic itinerary fallback."""
-        return self._create_structured_itinerary(activities, restaurants, num_travelers, budget_level, "", start_date, end_date)
+        return self._create_structured_itinerary(activities, restaurants, num_travelers, budget_level, "")
 
     async def plan_trip(self, destination: str, start_date: str, end_date: str, 
                        interests: List[str], budget_level: str = "mid", 
@@ -401,18 +301,7 @@ class TripPlanner:
         
         # Stage 3: AI-powered itinerary optimization
         yield "🗓️ AI creating your optimized daily itinerary..."
-        
-        # Calculate trip duration for progress updates
-        if start_date and end_date:
-            from datetime import datetime
-            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
-            end_dt = datetime.strptime(end_date, "%Y-%m-%d")
-            trip_days = (end_dt - start_dt).days + 1
-            yield f"📊 Planning {trip_days}-day itinerary from {start_date} to {end_date}..."
-        
-        itinerary_result = await self.optimize_itinerary(scored_activities, scored_restaurants, num_travelers, budget_level, start_date, end_date)
-        
-        yield f"🎯 Created daily schedule for all {trip_days} days with activities and dining..."
+        itinerary_result = await self.optimize_itinerary(scored_activities, scored_restaurants, num_travelers, budget_level)
         
         # Stage 4: Calculate costs and travel options
         yield f"💰 Calculating costs for {budget_level} budget level..."
@@ -739,50 +628,6 @@ class TripPlanner:
 🌡️  Temperature:    {plan.weather_info['temperature']}
 ☀️  Conditions:     {plan.weather_info['condition'].title()}
 🌈  Forecast:       {plan.weather_info['forecast']}
-
-🗓️  DAILY ITINERARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"""
-        
-        # Add daily itinerary
-        for date_key, day_plan in plan.itinerary.items():
-            # Format the date nicely
-            date_obj = datetime.strptime(date_key, "%Y-%m-%d")
-            formatted_date = date_obj.strftime("%A, %B %d, %Y")
-            
-            output += f"\n\n📍 {formatted_date}"
-            output += f"\n{'─' * 65}"
-            
-            if day_plan.get('morning'):
-                morning = day_plan['morning']
-                rating_stars = "⭐" * int(morning.get('rating', 0)) + "☆" * (5 - int(morning.get('rating', 0)))
-                output += f"\n🌅 MORNING     │ {morning['name']}"
-                output += f"\n              │ {morning.get('type', 'Activity')} • {rating_stars} ({morning.get('rating', 0)}/5)"
-            
-            if day_plan.get('lunch'):
-                lunch = day_plan['lunch']
-                rating_stars = "⭐" * int(lunch.get('rating', 0)) + "☆" * (5 - int(lunch.get('rating', 0)))
-                output += f"\n🍽️  LUNCH       │ {lunch['name']}"
-                output += f"\n              │ {lunch.get('cuisine', lunch.get('type', 'Restaurant'))} • {rating_stars} ({lunch.get('rating', 0)}/5)"
-            
-            if day_plan.get('afternoon'):
-                afternoon = day_plan['afternoon']
-                rating_stars = "⭐" * int(afternoon.get('rating', 0)) + "☆" * (5 - int(afternoon.get('rating', 0)))
-                output += f"\n☀️  AFTERNOON  │ {afternoon['name']}"
-                output += f"\n              │ {afternoon.get('type', 'Activity')} • {rating_stars} ({afternoon.get('rating', 0)}/5)"
-            
-            if day_plan.get('late_afternoon'):
-                late_afternoon = day_plan['late_afternoon']
-                rating_stars = "⭐" * int(late_afternoon.get('rating', 0)) + "☆" * (5 - int(late_afternoon.get('rating', 0)))
-                output += f"\n🌇 LATE AFT.   │ {late_afternoon['name']}"
-                output += f"\n              │ {late_afternoon.get('type', 'Activity')} • {rating_stars} ({late_afternoon.get('rating', 0)}/5)"
-            
-            if day_plan.get('evening'):
-                evening = day_plan['evening']
-                rating_stars = "⭐" * int(evening.get('rating', 0)) + "☆" * (5 - int(evening.get('rating', 0)))
-                output += f"\n🌙 EVENING     │ {evening['name']}"
-                output += f"\n              │ {evening.get('cuisine', evening.get('type', 'Restaurant'))} • {rating_stars} ({evening.get('rating', 0)}/5)"
-        
-        output += f"""
 
 🍽️  RECOMMENDED RESTAURANTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"""

@@ -13,7 +13,8 @@ def plan_trip_gradio(destination, origin_city, start_date, end_date, interests_t
     Gradio interface function for trip planning with streaming updates.
     """
     if not destination or not start_date or not end_date:
-        return "Please fill in all required fields (destination and dates)."
+        yield "Please fill in all required fields (destination and dates)."
+        return
     
     # Parse interests
     interests = [interest.strip() for interest in interests_text.split(',') if interest.strip()]
@@ -28,68 +29,78 @@ def plan_trip_gradio(destination, origin_city, start_date, end_date, interests_t
     except ValueError:
         num_travelers = 1
     
-    def run_async_planning():
-        """Run the async planning in a separate thread."""
+    try:
+        # Create new event loop for this thread  
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        all_updates = []
+        formatted_plan = ""
+        current_display = ""
+        
+        # Execute the planning step by step
+        planning_gen = planner.plan_trip(destination, start_date, end_date, interests, budget_level, num_travelers, include_lodging, origin_city)
+        
+        # Process updates one by one
         try:
-            # Create new event loop for this thread
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            
-            async def execute_planning():
-                all_updates = []
-                formatted_plan = ""
+            while True:
+                update = loop.run_until_complete(planning_gen.__anext__())
+                all_updates.append(update)
                 
-                # Execute the planning and collect updates
-                planning_gen = planner.plan_trip(destination, start_date, end_date, interests, budget_level, num_travelers, include_lodging, origin_city)
-                async for update in planning_gen:
-                    all_updates.append(update)
-                    # Check if this is the formatted trip plan (contains detailed markdown)
-                    if "Smart Trip Scout Plan for" in update and len(update) > 200:
-                        formatted_plan = update
-                
-                # For display, use the formatted plan if available
-                display_result = formatted_plan if formatted_plan else '\n'.join(all_updates)
-                
-                # For email, include both status updates and the plan
+                # Check if this is the formatted trip plan (contains detailed markdown)
+                if "Smart Trip Scout Plan for" in update and len(update) > 200:
+                    formatted_plan = update
+                    yield formatted_plan
+                else:
+                    # Stream progress updates
+                    current_display += f"{update}\n"
+                    yield current_display
+        except StopAsyncIteration:
+            pass
+        
+        # Use the formatted plan as final result if available
+        final_result = formatted_plan if formatted_plan else current_display
+        
+        # Handle email and push notifications
+        if email and email.strip():
+            try:
                 email_content = '\n'.join(all_updates)
                 if formatted_plan:
                     email_content += f"\n\n{formatted_plan}"
                 
-                return display_result, email_content
+                final_result += "\n\n📧 Sending email..."
+                yield final_result
+                
+                email_sent = planner.send_email(email.strip(), email_content)
+                if email_sent:
+                    final_result = final_result.replace("\n\n📧 Sending email...", "\n\n📧 Trip plan sent to your email!")
+                else:
+                    final_result = final_result.replace("\n\n📧 Sending email...", "\n\n❌ Failed to send email. Please check your email settings.")
+                yield final_result
+            except Exception as e:
+                final_result = final_result.replace("\n\n📧 Sending email...", f"\n\n❌ Email error: {str(e)}")
+                yield final_result
+        
+        if enable_push:
+            try:
+                final_result += "\n\n📱 Sending push notification..."
+                yield final_result
+                
+                push_sent = planner.send_push_notification("Your Smart Trip Scout plan is ready!")
+                if push_sent:
+                    final_result = final_result.replace("\n\n📱 Sending push notification...", "\n\n📱 Push notification sent!")
+                else:
+                    final_result = final_result.replace("\n\n📱 Sending push notification...", "\n\n❌ Failed to send push notification. Please check your Pushover settings.")
+                yield final_result
+            except Exception as e:
+                final_result = final_result.replace("\n\n📱 Sending push notification...", f"\n\n❌ Push notification error: {str(e)}")
+                yield final_result
             
-            display_result, email_content = loop.run_until_complete(execute_planning())
-            
-            # Handle email and push notifications
-            if email and email.strip():
-                try:
-                    email_sent = planner.send_email(email.strip(), email_content)
-                    if email_sent:
-                        display_result += "\n\n📧 Trip plan sent to your email!"
-                    else:
-                        display_result += "\n\n❌ Failed to send email. Please check your email settings."
-                except Exception as e:
-                    display_result += f"\n\n❌ Email error: {str(e)}"
-            
-            if enable_push:
-                try:
-                    push_sent = planner.send_push_notification("Your Smart Trip Scout plan is ready!")
-                    if push_sent:
-                        display_result += "\n\n📱 Push notification sent!"
-                    else:
-                        display_result += "\n\n❌ Failed to send push notification. Please check your Pushover settings."
-                except Exception as e:
-                    display_result += f"\n\n❌ Push notification error: {str(e)}"
-            
-            return display_result
-            
-        except Exception as e:
-            return f"❌ Error planning trip: {str(e)}"
-        finally:
-            if 'loop' in locals():
-                loop.close()
-    
-    # Run the planning
-    return run_async_planning()
+    except Exception as e:
+        yield f"❌ Error planning trip: {str(e)}"
+    finally:
+        if 'loop' in locals():
+            loop.close()
 
 def create_gradio_interface():
     """Create the Gradio interface for Smart Trip Scout."""

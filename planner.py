@@ -305,29 +305,55 @@ class TripPlanner:
                     break
                 selected_restaurants.append(restaurant)
         
-        # Create day-by-day itinerary with actual dates
+        # Create day-by-day itinerary with actual dates and unique activities
         days = {}
+        
+        # Create a pool of unique activities and restaurants to distribute
+        activity_pool = selected_activities.copy()
+        restaurant_pool = selected_restaurants.copy()
+        
+        # Shuffle to ensure variety across days
+        import random
+        random.shuffle(activity_pool)
+        random.shuffle(restaurant_pool)
+        
+        activity_index = 0
+        restaurant_index = 0
+        
         for day_num in range(trip_days):
             # Calculate the actual date for this day
             current_date = base_date + timedelta(days=day_num)
             date_key = current_date.strftime("%Y-%m-%d")
             formatted_date = current_date.strftime("%A, %B %d")
             
-            # Select activities and restaurants for this day
-            day_activities = selected_activities[day_num*3:(day_num+1)*3] if day_num*3 < len(selected_activities) else []
-            day_restaurants = selected_restaurants[day_num*2:(day_num+1)*2] if day_num*2 < len(selected_restaurants) else []
+            # Select 3 unique activities for this day
+            day_activities = []
+            for slot in range(3):  # morning, afternoon, late_afternoon
+                if activity_index < len(activity_pool):
+                    day_activities.append(activity_pool[activity_index])
+                    activity_index += 1
+                else:
+                    # If we've used all unique activities, we need to create variations
+                    # or indicate this is a free time/rest period
+                    if activity_pool:
+                        base_activity = activity_pool[slot % len(activity_pool)].copy()
+                        base_activity['name'] = f"Free Time / Explore {base_activity.get('type', 'Area')}"
+                        base_activity['description'] = f"Enjoy some leisure time or explore more of the destination"
+                        day_activities.append(base_activity)
             
-            # If we don't have enough activities for this day, fill with available ones
-            while len(day_activities) < 3 and selected_activities:
-                # Cycle through available activities
-                additional_activity = selected_activities[len(day_activities) % len(selected_activities)]
-                day_activities.append(additional_activity)
-            
-            # If we don't have enough restaurants for this day, fill with available ones
-            while len(day_restaurants) < 2 and selected_restaurants:
-                # Cycle through available restaurants
-                additional_restaurant = selected_restaurants[len(day_restaurants) % len(selected_restaurants)]
-                day_restaurants.append(additional_restaurant)
+            # Select 2 unique restaurants for this day
+            day_restaurants = []
+            for slot in range(2):  # lunch, dinner
+                if restaurant_index < len(restaurant_pool):
+                    day_restaurants.append(restaurant_pool[restaurant_index])
+                    restaurant_index += 1
+                else:
+                    # If we've used all unique restaurants, create variations
+                    if restaurant_pool:
+                        base_restaurant = restaurant_pool[slot % len(restaurant_pool)].copy()
+                        base_restaurant['name'] = f"Local {base_restaurant.get('cuisine', 'Dining')} Option"
+                        base_restaurant['description'] = f"Explore other {base_restaurant.get('cuisine', 'dining')} restaurants in the area"
+                        day_restaurants.append(base_restaurant)
             
             # Structure the day with morning, afternoon, evening
             day_plan = {}
@@ -425,7 +451,11 @@ class TripPlanner:
             travel_comparison = self.compare_travel_options(origin_city, destination, num_travelers)
             if travel_comparison:
                 recommended = travel_comparison["recommendation"]["preferred"]
-                yield f"✈️ Travel analysis complete - {recommended} recommended!"
+                if not travel_comparison["driving"].get("available", True):
+                    yield f"🚫 Driving not possible - {travel_comparison['driving']['reason']}"
+                    yield f"✈️ Flying required - analysis complete!"
+                else:
+                    yield f"✈️ Travel analysis complete - {recommended} recommended!"
         
         # Stage 5: Final confidence assessment
         avg_score = sum(item['score'] for item in scored_activities + scored_restaurants) / len(scored_activities + scored_restaurants)
@@ -551,14 +581,45 @@ class TripPlanner:
         """Compare driving vs flying options and return comprehensive analysis."""
         # Get driving information
         driving_info = self.get_driving_distance(origin, destination)
-        driving_costs = self.calculate_driving_cost(driving_info["miles"], num_travelers)
         
-        # Get flight information
+        # Check if driving is possible
+        if not driving_info.get("driveable", True):
+            # Flight only destination
+            flight_info = self.get_flight_cost(origin, destination, num_travelers)
+            
+            return {
+                "driving": {
+                    "available": False,
+                    "reason": driving_info.get("reason", "Driving not possible to this destination"),
+                    "distance_miles": 0,
+                    "drive_time_hours": 0,
+                    "total_cost": 0,
+                    "cost_per_person": 0
+                },
+                "flying": {
+                    "available": True,
+                    "flight_duration_hours": flight_info["flight_duration"],
+                    "total_time_hours": flight_info["total_travel_time"] * 2,  # Round trip with airport time
+                    "cost_per_person": flight_info["price_per_person"],
+                    "total_cost": flight_info["total_cost"],
+                    "convenience_score": 8,
+                    "pros": ["Only viable option", "Fast travel time", "Professional service"],
+                    "cons": ["Airport security", "Baggage restrictions", "Fixed schedule", "Higher cost"]
+                },
+                "recommendation": {
+                    "preferred": "flying",
+                    "reason": "Only available option - destination requires air travel"
+                }
+            }
+        
+        # Both driving and flying are possible
+        driving_costs = self.calculate_driving_cost(driving_info["miles"], num_travelers)
         flight_info = self.get_flight_cost(origin, destination, num_travelers)
         
         # Create comparison
         comparison = {
             "driving": {
+                "available": True,
                 "distance_miles": driving_info["miles"],
                 "drive_time_hours": driving_info["hours"],
                 "total_time_hours": driving_info["hours"] * 2,  # Round trip
@@ -570,6 +631,7 @@ class TripPlanner:
                 "cons": ["Longer travel time", "Driver fatigue", "Wear on vehicle", "Weather dependent"]
             },
             "flying": {
+                "available": True,
                 "flight_duration_hours": flight_info["flight_duration"],
                 "total_time_hours": flight_info["total_travel_time"] * 2,  # Round trip with airport time
                 "cost_per_person": flight_info["price_per_person"],
@@ -611,6 +673,51 @@ class TripPlanner:
 
     def get_driving_distance(self, origin: str, destination: str) -> Dict[str, Any]:
         """Get driving distance and time from origin to destination."""
+        # List of destinations that require flying (islands, overseas, etc.)
+        flight_only_destinations = {
+            "hawaii", "hi", "honolulu", "maui", "kauai", "big island",
+            "puerto rico", "pr", "san juan",
+            "alaska", "ak", "anchorage", "fairbanks", "juneau",
+            "us virgin islands", "usvi", "st thomas", "st john", "st croix", "saint thomas", "saint john", "saint croix",
+            "virgin islands", "thomas", "john", "croix",  # Common short forms
+            "guam", "american samoa", "northern mariana islands",
+            # International destinations
+            "united kingdom", "uk", "england", "london", "scotland", "ireland",
+            "france", "paris", "germany", "berlin", "italy", "rome", "spain", "madrid",
+            "japan", "tokyo", "china", "beijing", "australia", "sydney", "canada",
+            "mexico", "europe", "asia", "africa", "south america",
+            # Caribbean islands
+            "bahamas", "jamaica", "dominican republic", "barbados", "cuba",
+            "aruba", "curacao", "trinidad", "tobago", "martinique", "guadaloupe",
+            "caribbean", "bermuda", "cayman islands", "turks and caicos"
+        }
+        
+        # Check if destination requires flying
+        dest_lower = destination.lower()
+        origin_lower = origin.lower()
+        
+        # Debug print to see what we're checking
+        print(f"Checking destination: '{dest_lower}' for flight-only status")
+        
+        # Check if destination is flight-only (more thorough check)
+        is_flight_only = False
+        for place in flight_only_destinations:
+            if place in dest_lower:
+                print(f"Found flight-only match: '{place}' in '{dest_lower}'")
+                is_flight_only = True
+                break
+        
+        # Also check if crossing major bodies of water
+        is_overseas = any(country in dest_lower for country in ["uk", "france", "germany", "italy", "spain", "japan", "china", "australia"])
+        
+        if is_flight_only or is_overseas:
+            return {
+                "miles": 0,
+                "hours": 0,
+                "driveable": False,
+                "reason": "Destination requires air travel (island, overseas, or no road connection)"
+            }
+        
         # Simulate driving distance data based on common city pairs
         distance_data = {
             # Common distance estimates (in miles)
@@ -622,22 +729,27 @@ class TripPlanner:
             "boston-philadelphia": {"miles": 300, "hours": 5.0},
             "dallas-houston": {"miles": 240, "hours": 3.5},
             "atlanta-charlotte": {"miles": 245, "hours": 4.0},
-            "charleston-st thomas": {"miles": 1200, "hours": 18.0},  # Added for your trip
+            "charleston-charlotte": {"miles": 200, "hours": 3.5},
+            "charleston-atlanta": {"miles": 300, "hours": 4.6},
         }
         
         # Create search key
-        search_key = f"{origin.lower()}-{destination.lower()}"
-        reverse_key = f"{destination.lower()}-{origin.lower()}"
+        search_key = f"{origin_lower}-{dest_lower}"
+        reverse_key = f"{dest_lower}-{origin_lower}"
         
+        result = None
         if search_key in distance_data:
-            return distance_data[search_key]
+            result = distance_data[search_key].copy()
         elif reverse_key in distance_data:
-            return distance_data[reverse_key]
+            result = distance_data[reverse_key].copy()
         else:
             # Default estimate based on rough calculation
             estimated_miles = 300  # Default assumption
             estimated_hours = estimated_miles / 65  # Average highway speed
-            return {"miles": estimated_miles, "hours": estimated_hours}
+            result = {"miles": estimated_miles, "hours": estimated_hours}
+        
+        result["driveable"] = True
+        return result
 
     def calculate_driving_cost(self, distance_miles: float, num_travelers: int, 
                              mpg: float = 25, gas_price: float = 3.50) -> Dict[str, float]:
@@ -839,20 +951,37 @@ Budget Level: {plan.budget_level.title()} • Group Size: {plan.num_travelers} t
             output += f"""
 
 🚗✈️  TRAVEL OPTIONS: {plan.origin_city.title()} → {destination_formatted}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"""
+            
+            if tc['driving'].get('available', True):
+                output += f"""
 
 🚗 DRIVING OPTION
    Distance:     {tc['driving']['distance_miles']:.0f} miles ({tc['driving']['drive_time_hours']:.1f} hours each way)
    Total Cost:   ${tc['driving']['total_cost']:.2f} (${tc['driving']['cost_per_person']:.2f} per person)
-   Round Trip:   {tc['driving']['drive_time_hours'] * 2:.1f} hours total driving time
+   Round Trip:   {tc['driving']['drive_time_hours'] * 2:.1f} hours total driving time"""
+            else:
+                output += f"""
+
+🚗 DRIVING OPTION
+   ❌ NOT AVAILABLE
+   Reason: {tc['driving']['reason']}"""
+            
+            if tc['flying'].get('available', True):
+                output += f"""
 
 ✈️  FLYING OPTION
    Flight Time:  {tc['flying']['flight_duration_hours']:.1f} hours each way
    Total Cost:   ${tc['flying']['total_cost']:.2f} (${tc['flying']['cost_per_person']:.2f} per person)
-   Travel Time:  {tc['flying']['total_time_hours']:.1f} hours (including airport time)
+   Travel Time:  {tc['flying']['total_time_hours']:.1f} hours (including airport time)"""
+            
+            output += f"""
 
 🎯 RECOMMENDATION: {tc['recommendation']['preferred'].upper()} RECOMMENDED
-   Reason: {tc['recommendation']['reason'].title()}
+   Reason: {tc['recommendation']['reason'].title()}"""
+            
+            if tc['driving'].get('available', True) and tc['flying'].get('available', True):
+                output += f"""
    Cost difference: ${abs(tc['driving']['total_cost'] - tc['flying']['total_cost']):.2f}"""
         
         output += f"""

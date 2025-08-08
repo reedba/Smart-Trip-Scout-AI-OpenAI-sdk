@@ -1,20 +1,22 @@
 # 🌟 Smart Trip Scout AI
 
-A comprehensive AI-powered travel planning application that creates personalized trip itineraries using OpenAI's advanced language models. Smart Trip Scout provides intelligent recommendations based on your interests, weather conditions, budget preferences, and travel constraints with professional-grade formatting and real-time updates.
+A comprehensive AI-powered travel planning application that creates personalized trip itineraries using OpenAI's latest AsyncOpenAI SDK. Smart Trip Scout provides intelligent recommendations based on your interests, weather conditions, budget preferences, and travel constraints with professional-grade formatting and real-time streaming updates.
 
 ## ✨ Features
 
 ### 🤖 **Core AI Planning**
-- **Advanced AI Planning**: Uses OpenAI's GPT models with sophisticated function tools for intelligent trip optimization
+- **Latest OpenAI AsyncOpenAI SDK**: Uses cutting-edge async OpenAI client with GPT-4 for intelligent trip optimization
+- **Real-Time Streaming Updates**: Live progress updates during planning with emoji indicators showing exactly where you are in the process
 - **Interest-Based Matching**: Tailors recommendations based on your specific interests and preferences
 - **Weather Integration**: Considers weather conditions when recommending indoor vs outdoor activities
 - **Confidence Scoring**: Provides transparency with AI confidence levels for each recommendation
 
 ### 🎪 **Event & Activity Discovery**
-- **Festival & Event Detection**: Automatically discovers local festivals and special events during your trip dates (40% probability simulation)
-- **Non-Repeating Activities**: Smart distribution of activities across days to avoid repetition
+- **Festival & Event Detection**: Automatically discovers local festivals and special events during your trip dates
+- **Zero-Duplicate Activities**: Advanced deduplication system ensures no repeated activities across your entire trip
 - **Activity Optimization**: Prioritizes time-sensitive events like festivals on specific dates
 - **Interest Scoring**: Advanced scoring system that matches activities to your preferences
+- **Smart Activity Distribution**: Intelligently spreads unique activities across all days of your trip
 
 ### 💰 **Budget & Cost Management**
 - **Multi-Tier Budget Planning**: Low, mid, and luxury budget options with detailed cost breakdowns
@@ -23,12 +25,13 @@ A comprehensive AI-powered travel planning application that creates personalized
 - **Lodging Options**: Include or exclude accommodation costs in your budget
 - **Cost Categories**: Detailed breakdown of meals, activities, transport, lodging, and miscellaneous expenses
 
-### 🚗✈️ **Travel Cost Comparison**
-- **Driving vs Flying Analysis**: Comprehensive comparison of travel options from your origin city
+### 🚗✈️ **Intelligent Travel Analysis**
+- **Flight-Only Destination Detection**: Automatically identifies destinations that require air travel (islands, overseas locations)
+- **Smart Travel Restrictions**: Properly handles destinations like Hawaii, Caribbean islands, International locations
+- **Driving vs Flying Analysis**: Comprehensive comparison when both options are available
 - **Real Cost Calculations**: Includes gas, tolls, wear-and-tear for driving; flight costs for flying
 - **Time Analysis**: Compares total travel time including airport procedures
-- **Smart Recommendations**: AI-powered suggestions based on cost, time, and group size
-- **Route Planning**: Distance and duration calculations for driving routes
+- **AI-Powered Recommendations**: Smart suggestions based on cost, time, group size, and feasibility
 
 ### 📧 **Professional Communication**
 - **Beautiful Email Formatting**: Professional HTML emails with structured layouts, gradients, and visual elements
@@ -38,7 +41,7 @@ A comprehensive AI-powered travel planning application that creates personalized
 
 ### 🖥️ **User Experience**
 - **Modern Web Interface**: Built with Gradio for an intuitive, responsive experience
-- **Real-Time Updates**: Live progress updates during trip planning with emoji indicators
+- **Real-Time Streaming**: Live progress updates during trip planning with detailed status messages
 - **Multi-Port Support**: Automatic port selection (7860-7864) if default ports are busy
 - **Error Handling**: Comprehensive error handling with user-friendly messages
 - **Professional Output**: Clean, formatted trip plans with visual hierarchy and organization
@@ -82,7 +85,7 @@ A comprehensive AI-powered travel planning application that creates personalized
 
 The Smart Trip Scout follows these AI-powered stages with real-time updates:
 
-### 🔄 AI Workflow Architecture
+### 🔄 Enhanced AI Workflow Architecture
 
 ```mermaid
 graph TD
@@ -94,7 +97,7 @@ graph TD
     C --> F[🎯 Activity Search]
     C --> G[🎪 Festival Detection]
     
-    D --> H[📊 AI Evaluator Engine]
+    D --> H[📊 AsyncOpenAI Evaluator]
     E --> H
     F --> H
     G --> H
@@ -104,50 +107,191 @@ graph TD
     H --> K[Festival Priority Boost]
     H --> L[Quality Filtering]
     
-    I --> M[🧠 AI Optimizer Engine]
+    I --> M[🧠 AI Itinerary Optimizer]
     J --> M
     K --> M
     L --> M
     
-    M --> N[Non-Repeating Distribution]
-    M --> O[Festival Date Scheduling]
-    M --> P[Activity Balance Logic]
-    M --> Q[Time Slot Optimization]
+    M --> N[🚫 Deduplication Engine]
+    M --> O[📅 Date-Based Scheduling]
+    M --> P[⚖️ Activity Balance Logic]
+    M --> Q[🕐 Time Slot Optimization]
     
     N --> R[💰 Budget Calculator]
     O --> R
     P --> R
     Q --> R
     
-    R --> S[🚗✈️ Travel Analyzer]
-    S --> T[📧 Professional Formatter]
-    T --> U[✅ Quality Assurance]
-    U --> V[🎉 Final Delivery]
+    R --> S[🚗✈️ Travel Feasibility Analyzer]
+    S --> T[🚫 Flight-Only Detection]
+    S --> U[💰 Cost Comparison]
+    
+    T --> V[📧 Professional Formatter]
+    U --> V
+    V --> W[✅ Quality Assurance]
+    W --> X[🎉 Streaming Delivery]
     
     style A fill:#e1f5fe
     style H fill:#f3e5f5
     style M fill:#e8f5e8
-    style R fill:#fff3e0
-    style V fill:#e8f5e8
+    style N fill:#ffebee
+    style S fill:#fff3e0
+    style T fill:#ffebee
+    style X fill:#e8f5e8
 ```
 
-### 🔧 Detailed AI Processing Pipeline
+### 🔧 Enhanced AI Processing Pipeline
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    🤖 SMART TRIP SCOUT AI ENGINE                    │
+│                🤖 SMART TRIP SCOUT AI ENGINE v2.0                   │
+│                    (Latest AsyncOpenAI SDK)                         │
 └─────────────────────────────────────────────────────────────────────┘
 
-📥 INPUT PROCESSING
+📥 INPUT PROCESSING & VALIDATION
 ┌─────────────────────────────────────────────────────────────────────┐
 │ User Inputs → Validation → Interest Parsing → Date Processing       │
 │ destination, dates, interests, budget, travelers, origin            │
+│ ✅ Real-time validation with streaming feedback                     │
 └─────────────────────────────────────────────────────────────────────┘
                                     ↓
-🔍 INFORMATION GATHERING STAGE
+🔍 ENHANCED INFORMATION GATHERING
 ┌─────────────────────────────────────────────────────────────────────┐
 │ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐    │
 │ │   Weather   │ │ Restaurants │ │ Activities  │ │  Festivals  │    │
+│ │   Search    │ │  Discovery  │ │   Search    │ │  Detection  │    │
+│ │    🌤️      │ │     🍽️      │ │     🎯      │ │     🎪     │    │
+│ └─────────────┘ ┌─────────────┐ └─────────────┘ └─────────────┘    │
+│ ⚡ Streaming Progress Updates: "🤖 AI analyzing destination..."     │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓
+📊 ASYNCOPENAI EVALUATOR ENGINE
+┌─────────────────────────────────────────────────────────────────────┐
+│                    AsyncOpenAI GPT-4 Evaluation                     │
+│                                                                     │
+│  🎯 Enhanced Interest Matching:                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  for each item in [activities, restaurants, festivals]:    │   │
+│  │    base_score = 0.5                                        │   │
+│  │    for interest in user_interests:                         │   │
+│  │      if interest in item.tags:                             │   │
+│  │        interest_bonus += 0.2                               │   │
+│  │    if weather_compatible(item, weather_data):              │   │
+│  │      weather_bonus = 0.1                                   │   │
+│  │    if item.type == "festival":                             │   │
+│  │      time_sensitive_boost = 0.2                            │   │
+│  │    final_score = min(1.0, base + bonuses)                 │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  📈 Output: Scored & Ranked Collections                            │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  scored_restaurants = [item1: 0.9, item2: 0.8, ...]       │   │
+│  │  scored_activities = [item1: 0.95, item2: 0.85, ...]      │   │
+│  │  scored_festivals = [item1: 1.0, item2: 0.9, ...]         │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ⚡ Streaming: "🧠 AI evaluating activities based on preferences..." │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓
+🧠 AI ITINERARY OPTIMIZER WITH DEDUPLICATION
+┌─────────────────────────────────────────────────────────────────────┐
+│                      AsyncOpenAI GPT-4 Optimizer                    │
+│                                                                     │
+│  🚫 ZERO-DUPLICATE DISTRIBUTION ENGINE:                            │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  used_activities = set()                                    │   │
+│  │  used_restaurants = set()                                   │   │
+│  │                                                             │   │
+│  │  for day_num in range(trip_days):                          │   │
+│  │    # Find unique activities for this day                   │   │
+│  │    day_activities = []                                      │   │
+│  │    for activity in scored_activities:                      │   │
+│  │      activity_id = f"{activity.name}_{activity.type}"      │   │
+│  │      if activity_id not in used_activities:                │   │
+│  │        day_activities.append(activity)                     │   │
+│  │        used_activities.add(activity_id)                    │   │
+│  │        if len(day_activities) >= 3: break                  │   │
+│  │                                                             │   │
+│  │    # Same deduplication for restaurants                    │   │
+│  │    # Only mark as "Return Visit" if truly no alternatives  │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  📅 INTELLIGENT DATE-BASED SCHEDULING:                             │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  for each_day in trip_duration:                            │   │
+│  │    current_date = start_date + timedelta(days=day_num)     │   │
+│  │    festivals_today = filter_festivals_by_date(current_date)│   │
+│  │    if festivals_today:                                      │   │
+│  │      prioritize_festival_for_morning_slot()                │   │
+│  │    assign_time_slots(morning, afternoon, evening)          │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  📅 Output: Optimized Multi-Day Itinerary                          │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  itinerary = {                                              │   │
+│  │    "2026-06-07": {                                          │   │
+│  │      "morning": "Snorkeling at Coki Beach",               │   │
+│  │      "lunch": "Beachside Grill",                          │   │
+│  │      "afternoon": "Beach Fishing",                        │   │
+│  │      "evening": "Magens Bay Beach Bar"                    │   │
+│  │    },                                                       │   │
+│  │    "2026-06-08": {                                          │   │
+│  │      "morning": "Deep Sea Fishing Charter", # NEW         │   │
+│  │      "lunch": "Coral World Snack Bar",      # NEW         │   │
+│  │      "afternoon": "Sunset Sailing",         # NEW         │   │
+│  │      "evening": "Fishing Village Restaurant" # NEW        │   │
+│  │    }, ...                                                   │   │
+│  │  }                                                          │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ⚡ Streaming: "📅 Planning Monday, June 08 (Day 2/7)..."          │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓
+🚗✈️ ENHANCED TRAVEL FEASIBILITY ANALYZER
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Smart Travel Restriction Engine                  │
+│                                                                     │
+│  🚫 FLIGHT-ONLY DESTINATION DETECTION:                             │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  flight_only_destinations = {                               │   │
+│  │    "hawaii", "st thomas", "puerto rico", "alaska",         │   │
+│  │    "caribbean", "bermuda", "virgin islands",               │   │
+│  │    "uk", "france", "japan", "australia", ...              │   │
+│  │  }                                                          │   │
+│  │                                                             │   │
+│  │  if any(place in destination.lower()                       │   │
+│  │         for place in flight_only_destinations):            │   │
+│  │    return {                                                 │   │
+│  │      "driving": {"available": False,                       │   │
+│  │                 "reason": "Island/Overseas destination"},  │   │
+│  │      "flying": {"available": True, ...}                    │   │
+│  │    }                                                        │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  💰 COMPREHENSIVE COST COMPARISON (when both available):           │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  driving_cost = calculate_gas_tolls_wear_tear()             │   │
+│  │  flying_cost = calculate_flights_airport_transport()       │   │
+│  │  time_comparison = driving_hours vs flight_plus_airport    │   │
+│  │  recommendation = smart_decision(cost, time, group_size)   │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ⚡ Streaming: "🚫 Driving not possible - Island destination"       │
+│  ⚡ Streaming: "✈️ Flying required - analysis complete!"            │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓
+💰 BUDGET & COST ANALYSIS
+┌─────────────────────────────────────────────────────────────────────┐
+│  Regional Pricing → Multi-Tier Budgets → Group Calculations         │
+│  Travel Costs → Activity Costs → Restaurant Costs → Total Breakdown │
+└─────────────────────────────────────────────────────────────────────┘
+                                    ↓
+📧 PROFESSIONAL FORMATTING & STREAMING DELIVERY
+┌─────────────────────────────────────────────────────────────────────┐
+│  Beautiful Formatting → Real-time Streaming → Email → Quality Check │
+│  ⚡ User sees: "🎉 AI-powered trip planning complete!"              │
+└─────────────────────────────────────────────────────────────────────┘
+```
 │ │   Search    │ │  Discovery  │ │   Search    │ │  Detection  │    │
 │ │    Tool     │ │    Tool     │ │    Tool     │ │    Tool     │    │
 │ └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘    │
@@ -280,70 +424,142 @@ graph TD
 - **Email Delivery**: Beautiful HTML emails with structured layouts and rich content
 - **Push Notifications**: Instant alerts when your plan is ready
 
-## 📝 Example Usage
+## 📝 Example Usage & Real-Time Flow
 
-### Basic Trip Planning
-**Input:**
-- **Destination**: Tokyo, Japan
-- **Origin City**: Los Angeles, CA
-- **Dates**: 2025-08-15 to 2025-08-20
-- **Travelers**: 2 people
-- **Budget**: Mid-range
-- **Interests**: food, culture, technology, anime
-- **Include Lodging**: Yes
+### Example 1: Caribbean Island Trip (Flight-Only Destination)
 
-**Output:**
+**Real-Time Stream:**
 ```
-╔══════════════════════════════════════════════════════════════╗
-║                    🌟 SMART TRIP SCOUT PLAN                  ║
-║                         Tokyo, Japan                         ║
-╚══════════════════════════════════════════════════════════════╝
+🚀 Starting AI-powered trip planning for st. thomas...
+🤖 AI analyzing destination and gathering travel intelligence...
+🧠 AI evaluating activities and restaurants based on your preferences...
+📊 Planning 7-day itinerary from 2026-06-07 to 2026-06-14...
+🎯 Selected 21 activities and 14 restaurants...
+📅 Planning Sunday, June 07 (Day 1/7)...
+📅 Planning Monday, June 08 (Day 2/7)...
+💰 Calculating costs for mid budget level...
+✈️ Analyzing travel options...
+🚫 Driving not possible - Destination requires air travel (island, overseas, or no road connection)
+✈️ Flying required - analysis complete!
+✅ High AI confidence - excellent matches found for your interests!
+🎉 AI-powered trip planning complete!
+```
 
-📋 TRIP OVERVIEW
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📅 Travel Dates:    2025-08-15 → 2025-08-20 (6 days)
-👥 Travelers:       2 persons
-💰 Budget Tier:     Mid Level
-🎯 Interests:       Food, Culture, Technology, Anime
-📊 Confidence:      🟢 High (85%)
+**Input:**
+- **Destination**: St. Thomas, USVI
+- **Origin City**: Charleston, SC
+- **Dates**: 2026-06-07 to 2026-06-14 (7 days)
+- **Travelers**: 4 people
+- **Budget**: Mid-range
+- **Interests**: Beach, Fishing, Snorkeling, Boating, Food
 
-🌤️  WEATHER FORECAST
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🌡️  Temperature:    28°C
-☀️  Conditions:     Partly Cloudy
-🌈  Forecast:       Warm with occasional rain showers
-
+**Output Highlights:**
+```
 🗓️  DAILY ITINERARY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📍 Thursday, August 15, 2025
+📍 Sunday, June 07, 2026
 ─────────────────────────────────────────────────────────────
-🌅 MORNING     │ Tokyo Anime Center
-              │ Cultural • ⭐⭐⭐⭐☆ (4.2/5)
-☀️  AFTERNOON  │ Tech Museum Interactive Tour
-              │ Technology • ⭐⭐⭐⭐⭐ (4.7/5)
-🌙 EVENING     │ Traditional Ramen House
-              │ Japanese Cuisine • ⭐⭐⭐⭐☆ (4.4/5)
+� MORNING     │ Snorkeling at Coki Beach
+              │ Water Sports • ⭐⭐⭐⭐☆ (4.6/5)
+🍽️  LUNCH       │ Beachside Grill
+              │ Grilled Fish • ⭐⭐⭐⭐☆ (4.2/5)
+☀️  AFTERNOON  │ Beach Fishing
+              │ Fishing • ⭐⭐⭐⭐☆ (4.2/5)
+🌙 EVENING     │ Magens Bay Beach Bar
+              │ Seafood • ⭐⭐⭐⭐☆ (4.5/5)
+
+📍 Monday, June 08, 2026
+─────────────────────────────────────────────────────────────
+🌅 MORNING     │ Deep Sea Fishing Charter    # NEW ACTIVITY
+              │ Water Sports • ⭐⭐⭐⭐☆ (4.8/5)
+🍽️  LUNCH       │ Coral World Snack Bar      # NEW RESTAURANT
+              │ Caribbean • ⭐⭐⭐⭐☆ (4.3/5)
+☀️  AFTERNOON  │ Sunset Sailing              # NEW ACTIVITY
+              │ Water Sports • ⭐⭐⭐⭐☆ (4.5/5)
+🌙 EVENING     │ Fishing Village Restaurant  # NEW RESTAURANT
+              │ Local Fish • ⭐⭐⭐⭐☆ (4.6/5)
+
+🚗✈️  TRAVEL OPTIONS: Charleston, Sc → St. Thomas
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚗 DRIVING OPTION
+   ❌ NOT AVAILABLE
+   Reason: Destination requires air travel (island, overseas, or no road connection)
+
+✈️  FLYING OPTION
+   Flight Time:  3.5 hours each way
+   Total Cost:   $2,800.00 ($700.00 per person)
+   Travel Time:  11.0 hours (including airport time)
+
+🎯 RECOMMENDATION: FLYING RECOMMENDED
+   Reason: Only Available Option - Destination Requires Air Travel
 ```
 
-### Advanced Features in Action
+### Example 2: Domestic Road Trip (Driving Available)
 
-**Festival Detection:**
-- Automatically discovers "Tokyo Summer Festival" during your dates
-- Prioritizes festival scheduling on specific days
-- Integrates cultural events with your interests
+**Input:**
+- **Destination**: Charleston, SC
+- **Origin City**: Atlanta, GA
+- **Dates**: 2025-09-15 to 2025-09-18 (3 days)
+- **Travelers**: 2 people
+- **Budget**: Mid-range
+- **Interests**: History, Food, Architecture
 
-**Travel Cost Comparison:**
-- Driving: $450 total (11 hours) - Not recommended for international travel
-- Flying: $1,200 total (14 hours with connections) - **Recommended**
+**Real-Time Stream Shows:**
+```
+✈️ Analyzing travel options...
+✅ Both driving and flying options available
+✈️ Travel analysis complete - driving recommended!
+```
 
-**Budget Breakdown (Mid-level for 2 travelers):**
-- 🍽️ Meals & Dining: $600 (25% of budget)
-- 🎯 Activities: $480 (20% of budget)
-- 🚗 Local Transport: $240 (10% of budget)
-- 🏨 Accommodation: $900 (37.5% of budget)
-- 💼 Miscellaneous: $180 (7.5% of budget)
-- **Total: $2,400 ($1,200 per person)**
+**Travel Comparison:**
+```
+🚗 DRIVING OPTION
+   Distance:     300 miles (4.6 hours each way)
+   Total Cost:   $196.50 ($98.25 per person)
+   Round Trip:   9.2 hours total driving time
+
+✈️  FLYING OPTION
+   Flight Time:  1.2 hours each way
+   Total Cost:   $520.00 ($260.00 per person)
+   Travel Time:  6.4 hours (including airport time)
+
+🎯 RECOMMENDATION: DRIVING RECOMMENDED
+   Reason: Significantly Cheaper
+   Cost difference: $323.50
+```
+
+### Example 3: International Destination (Flight-Only + Advanced Features)
+
+**Input:**
+- **Destination**: Tokyo, Japan
+- **Origin**: Los Angeles, CA
+- **Dates**: 2025-08-15 to 2025-08-20 (6 days)
+- **Travelers**: 2 people
+- **Budget**: Luxury
+- **Interests**: Food, Culture, Technology, Anime
+
+**Key Features Demonstrated:**
+- ✅ **Zero Activity Duplicates**: Each day has completely different activities
+- ✅ **Flight-Only Detection**: Automatically identifies international destination
+- ✅ **Festival Integration**: Discovers "Tokyo Summer Festival" during dates
+- ✅ **Interest Matching**: High scores for anime, tech, and food activities
+- ✅ **Real-Time Streaming**: Live updates during each planning stage
+
+**Budget Breakdown (Luxury tier, 2 travelers):**
+```
+💰 COST BREAKDOWN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🍽️  Meals & Dining   │ $900.00  │ ████████████████████ 30.0%
+🎯  Activities       │ $720.00  │ ████████████████░░░░ 24.0%
+🚗  Local Transport  │ $360.00  │ ████████░░░░░░░░░░░░ 12.0%
+🏨  Accommodation    │ $900.00  │ ████████████████████ 30.0%
+💼  Miscellaneous    │ $120.00  │ ████░░░░░░░░░░░░░░░░ 4.0%
+
+💳 TOTAL ESTIMATED COST: $3,000.00
+💵 Cost per person: $1,500.00
+```
 
 ## 🔧 File Structure
 
@@ -357,58 +573,114 @@ Smart-Trip-Scout-AI-OpenAI-sdk/
 └── planner.py              # Core AI planning logic with all features
 ```
 
-## 🛠️ API Keys Setup
+## 🛠️ Installation & Usage
+
+### 1. **Setup Requirements:**
+```bash
+pip install openai asyncio datetime
+```
+
+### 2. **Set OpenAI API Key:**
+```bash
+export OPENAI_API_KEY=your_api_key_here
+```
+
+### 3. **Run the Application:**
+```bash
+python trip_scout.py
+```
+
+### 4. **Interactive Planning Process:**
+- **Destination**: Enter any city/country (e.g., "St. Thomas", "Tokyo", "Charleston")
+- **Origin City**: Your starting location for travel analysis
+- **Travel Dates**: YYYY-MM-DD format for accurate planning
+- **Travelers**: Number of people for cost calculations
+- **Budget Tier**: Budget/Mid/Luxury for appropriate recommendations
+- **Interests**: Comma-separated list (e.g., "food, culture, beaches")
+- **Lodging**: Include accommodation in cost estimates
+
+### 5. **Real-Time Experience:**
+```
+🚀 Starting AI-powered trip planning...
+🤖 AI analyzing destination and gathering intelligence...
+🧠 Evaluating activities based on your preferences...
+📊 Planning X-day itinerary...
+🎯 Selecting activities and restaurants...
+💰 Calculating costs for your budget level...
+✈️ Analyzing travel options...
+✅ AI confidence: High - excellent matches found!
+🎉 Trip planning complete!
+```
+
+## 🔧 API Keys & Configuration
 
 ### Required:
 - **OpenAI API Key**: Get from [OpenAI Platform](https://platform.openai.com/api-keys)
-  - Used for: AI-powered trip planning and optimization
-  - Cost: ~$0.01-0.10 per trip plan
+  - Used for: AsyncOpenAI SDK integration and AI-powered trip planning
+  - Cost: ~$0.01-0.10 per trip plan (very affordable)
+  - Features: GPT-4 analysis, real-time streaming, activity optimization
 
-### Optional (Highly Recommended):
-- **SendGrid API Key**: Get from [SendGrid](https://sendgrid.com/)
-  - Used for: Professional HTML email delivery
-  - Cost: Free tier available (100 emails/day)
+### Smart Features Configuration:
+- **Zero-Duplicate Activities**: Built-in, no configuration needed
+- **Flight-Only Detection**: Comprehensive destination database included
+- **Travel Cost Analysis**: Real-time driving vs flying comparison
+- **Weather Integration**: Automatic weather forecasts for dates
+- **Festival Discovery**: Local event detection during your travel dates
+- **Confidence Scoring**: AI evaluates plan quality and data availability
 
-- **Pushover Credentials**: Get from [Pushover](https://pushover.net/)
-  - Used for: Instant push notifications
-  - Cost: One-time $5 fee per platform
+## 🌍 Destination Intelligence
 
-## 🌍 Supported Destinations
+### Flight-Only Destinations (Automatically Detected):
+**Caribbean Islands**: St. Thomas, St. John, Barbados, Jamaica, Bahamas, Puerto Rico  
+**Pacific Islands**: Hawaii, Guam, Fiji, Tahiti, Samoa  
+**International**: All overseas countries, territories requiring air travel  
+**Remote US**: Alaska (from lower 48), isolated locations
 
-The app includes regional pricing data for 35+ destinations:
+### Driving Analysis Available:
+**Continental US**: All 48 states with real-time distance calculations  
+**Cost Comparison**: Fuel, time, vs flight prices with recommendations  
+**Group Optimization**: Driving becomes cost-effective for larger groups
 
-**High-Cost Destinations**: Paris, London, New York, Tokyo, Sydney, Zurich  
-**Medium-Cost Destinations**: Rome, Madrid, Berlin, Amsterdam, Barcelona  
-**Lower-Cost Destinations**: Bangkok, Mexico City, Istanbul, Delhi, Lima
+## 💡 Advanced Features & Tips
 
-*Regional pricing automatically adjusts based on destination cost of living.*
+### 🚀 **Smart Activity Distribution**
+- **Zero-Duplicate Engine**: Advanced tracking prevents repeated activities across all days
+- **Restaurant Variety**: Unique dining experiences for breakfast, lunch, and dinner
+- **Interest Scoring**: Activities matched and scored against your specific preferences
+- **Quality Assurance**: All recommendations verified for ratings and relevance
 
-## 💡 Advanced Usage Tips
+### 🎯 **Optimal Planning Strategies**
+- **Specific Interests**: Use detailed interests like "Italian Renaissance art, wine tasting, authentic pasta"
+- **Origin City**: Always include for accurate travel cost analysis and recommendations
+- **Flexible Dates**: Consider off-peak travel for better pricing and availability
+- **Group Size**: Larger groups make driving more cost-effective vs flying
 
-### 1. **Optimal Planning**
-- Use specific interests: "Italian food, Renaissance art, wine tasting"
-- Include origin city for travel cost comparison
-- Enable lodging costs for complete budget picture
+### ✈️ **Travel Intelligence**
+- **Flight-Only Detection**: Automatically identifies islands, overseas, and non-driveable destinations
+- **Cost Comparison**: Real-time analysis of driving vs flying with recommendations
+- **Time Calculations**: Includes realistic travel times, airport delays, and connection times
+- **Group Discounts**: Travel costs optimized based on number of travelers
 
-### 2. **Festival Discovery**
-- Plan trips during festival seasons for unique experiences
-- App automatically detects and prioritizes time-sensitive events
-- 40% chance simulation ensures realistic festival availability
+### 🌟 **Festival & Event Discovery**
+- **Automatic Detection**: Discovers local festivals and events during your travel dates
+- **Priority Scheduling**: Time-sensitive events get priority in itinerary planning
+- **Cultural Integration**: Seamlessly integrates festivals with your interests and activities
 
-### 3. **Budget Optimization**
-- Low: Budget-friendly options, street food, public transport
-- Mid: Balanced mix of experiences and comfort
-- Luxury: Premium experiences, fine dining, private transport
+### 📊 **Budget Optimization by Tier**
+- **Budget**: Street food, public transport, free attractions, local experiences
+- **Mid-Range**: Balanced comfort and experiences, popular restaurants, guided tours  
+- **Luxury**: Premium experiences, fine dining, private transport, exclusive access
 
-### 4. **Group Planning**
-- Cost calculations automatically scale for group size
-- Driving becomes more cost-effective with larger groups
-- Group discounts considered in activity pricing
+### 🎭 **Confidence & Quality Levels**
+- **🟢 High (80-100%)**: Excellent activity matches, comprehensive local data available
+- **🟡 Medium (60-79%)**: Good matches found, some data limitations may exist
+- **🔴 Low (40-59%)**: Basic planning possible, limited local information available
 
-### 5. **Email & Notifications**
-- Professional HTML emails with rich formatting
-- Save emails for offline reference during travel
-- Push notifications provide instant plan completion alerts
+### 📱 **Real-Time Experience**
+- **Live Streaming**: Watch your trip plan build in real-time with progress updates
+- **Instant Feedback**: Immediate travel feasibility analysis (driving vs flying)
+- **Smart Messaging**: Clear explanations for travel restrictions and recommendations
+- **Progress Tracking**: Step-by-step visibility into AI planning process
 
 ## 🔒 Privacy & Security
 
